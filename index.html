@@ -294,13 +294,13 @@
   .grid-wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
 
   /* CARDS */
-  .card { background: var(--paper); padding: 7px 9px; display: flex; flex-direction: column; gap: 5px; cursor: pointer; transition: background .2s; position: relative; }
+  .card { background: var(--paper); padding: 5px 7px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; transition: background .2s; position: relative; }
   .card:hover { background: var(--paper-deep); }
   .card.off { opacity: 0.55; }
   .card.expanded { background: var(--paper-deep); }
   .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
   .card-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-mute); font-weight: 500; }
-  .card-name { font-family: var(--font-body); font-weight: 600; font-size: 13px; line-height: 1.2; letter-spacing: 0; color: var(--ink); margin-top: 1px; }
+  .card-name { font-family: var(--font-body); font-weight: 600; font-size: 11px; line-height: 1.2; letter-spacing: 0; color: var(--ink); margin-top: 1px; }
   .card-state { font-size: 8px; text-transform: uppercase; letter-spacing: 0.14em; padding: 2px 5px; border-radius: 2px; font-weight: 600; flex-shrink: 0; line-height: 1.2; }
   .state-on { background: var(--moss); color: var(--paper); }
   .state-off { background: var(--paper-deep); color: var(--ink-mute); }
@@ -308,12 +308,12 @@
   .state-alert { background: var(--red); color: var(--paper); }
 
   .reading { display: flex; align-items: baseline; gap: 3px; line-height: 0.9; }
-  .reading-value { font-family: var(--font-body); font-weight: 500; font-size: 22px; letter-spacing: -0.02em; }
+  .reading-value { font-family: var(--font-body); font-weight: 500; font-size: 17px; letter-spacing: -0.02em; }
   .reading-value em { font-style: italic; color: var(--terracotta); font-weight: 400; }
 
   .metrics-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .mini-metric { display: flex; flex-direction: column; gap: 1px; }
-  .mini-value { font-family: var(--font-body); font-weight: 500; font-size: 14px; letter-spacing: -0.01em; line-height: 1; }
+  .mini-value { font-family: var(--font-body); font-weight: 500; font-size: 12px; letter-spacing: -0.01em; line-height: 1; }
   .mini-value em { font-style: italic; color: var(--moss); }
   .mini-value.ok { color: var(--moss); font-style: italic; }
   .mini-value.alert { color: var(--red); font-style: italic; }
@@ -694,7 +694,7 @@ function DeviceCard({ device, onToggle, onSetCapability, prefs, onUpdatePrefs, c
         </>
       )}
 
-      {hasDim && isOn && !hasTargetTemp && (
+      {hasDim && !hasTargetTemp && (
         <>
           <div className="reading"><div className="reading-value">{Math.round(localDim * 100)}<em>%</em></div></div>
           <div className="control" onClick={stopProp}>
@@ -722,15 +722,7 @@ function DeviceCard({ device, onToggle, onSetCapability, prefs, onUpdatePrefs, c
         </div>
       )}
 
-      {hasOnoff && !hasDim && !hasTargetTemp && (
-        <button className={`toggle ${isOn ? "is-on" : ""}`} onClick={handleToggle} disabled={toggling}>
-          {toggling ? "…" : isOn ? "Slå av" : "Slå på"}
-        </button>
-      )}
-      {hasOnoff && hasDim && !isOn && (
-        <button className="toggle" onClick={handleToggle} disabled={toggling}>{toggling ? "…" : "Slå på"}</button>
-      )}
-      {hasOnoff && hasTargetTemp && (
+      {hasOnoff && (
         <button className={`toggle ${isOn ? "is-on" : ""}`} onClick={handleToggle} disabled={toggling}>
           {toggling ? "…" : isOn ? "Slå av" : "Slå på"}
         </button>
@@ -830,24 +822,38 @@ function ZoneBlock({ zone, devicesByZone, onToggle, onSetCapability, prefs, onUp
 }
 
 function FloorColumn({ floor, idx, devicesByZone, onToggle, onSetCapability, prefs, onUpdatePrefs }) {
-  const directDevices = devicesByZone[floor.id] || [];
   const allDevices = devicesInZoneTree(floor, devicesByZone);
   if (allDevices.length === 0) return null;
   const num = ROMAN[idx + 1] || (idx + 1);
+
+  const assigned = new Set();
+  const lys = allDevices.filter(d => DEVICE_GROUPS[0].test(d));
+  lys.forEach(d => assigned.add(d.id));
+  const termostater = allDevices.filter(d => !assigned.has(d.id) && DEVICE_GROUPS[1].test(d));
+  termostater.forEach(d => assigned.add(d.id));
+  const annet = allDevices.filter(d => !assigned.has(d.id));
+
+  const groups = [
+    { key: "lys", label: "Lys", devices: lys },
+    { key: "termostat", label: "Termostater", devices: termostater },
+    { key: "annet", label: "Annet", devices: annet },
+  ].filter(g => g.devices.length > 0);
+
   return (
     <div className="col">
       <div className="col-head">
         <h2 className="col-title"><em>{num}.</em>{floor.name}</h2>
         <div className="col-subtitle">{allDevices.length} enheter</div>
       </div>
-      {directDevices.length > 0 && (
-        <div className="zone">
-          <DeviceGroups devices={directDevices} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+      {groups.map(grp => (
+        <div key={grp.key} className="device-group">
+          <div className="device-group-label">{grp.label}</div>
+          <div className="grid">
+            {grp.devices.map(d => (
+              <DeviceCard key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+            ))}
+          </div>
         </div>
-      )}
-      {(floor.children || []).map(sub => (
-        <ZoneBlock key={sub.id} zone={sub} devicesByZone={devicesByZone}
-          onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
       ))}
     </div>
   );
@@ -924,10 +930,9 @@ function WeatherModule({ devices, zones, globalPrefs }) {
         <span className="module-sub">{sensor.name}</span>
       </div>
       <div className="weather-main">
-        {temp != null ? (() => {
-          const { intPart, decPart } = formatDecimal(temp, 1);
-          return <span className="weather-temp">{intPart}<em>,{decPart}</em>°</span>;
-        })() : <span className="weather-temp">–°</span>}
+        {temp != null
+          ? <span className="weather-temp">{Number(temp).toFixed(1).replace('.', ',')}<em>°</em></span>
+          : <span className="weather-temp">–<em>°</em></span>}
       </div>
       <div className="weather-mini">
         {humidity != null && <div className="mini-metric"><div className="mini-value">{Math.round(humidity)}%</div><div className="mini-label">Fukt</div></div>}
