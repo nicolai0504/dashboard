@@ -32,7 +32,7 @@
     background: var(--paper);
     color: var(--ink);
     font-family: var(--font-body);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.4;
     min-height: 100vh;
     background-image:
@@ -271,7 +271,7 @@
 
   /* ====== STYRING (3-col floors) ====== */
   .columns { display: grid; gap: 0; padding-top: 14px; }
-  .col { padding: 0 18px; border-left: 1px solid var(--line-soft); min-width: 0; }
+  .col { padding: 0 14px; border-left: 1px solid var(--line-soft); min-width: 0; }
   .col:first-child { padding-left: 0; border-left: none; }
   .col-head { padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
   .col-title { font-family: var(--font-display); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; line-height: 1; font-variation-settings: 'opsz' 144; }
@@ -279,42 +279,42 @@
   .col-subtitle { font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.18em; white-space: nowrap; }
 
   /* ZONES & GRID */
-  .zone { margin-bottom: 18px; }
+  .zone { margin-bottom: 12px; }
   .zone:last-child { margin-bottom: 4px; }
-  .zone-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+  .zone-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 5px; }
   .zone-name { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 16px; letter-spacing: -0.01em; }
   .zone-summary { font-size: 9px; color: var(--ink-mute); letter-spacing: 0.04em; flex: 1; border-left: 1px solid var(--line); padding-left: 10px; font-style: italic; }
   .zone-summary span { color: var(--moss); font-style: normal; font-weight: 500; }
 
-  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
   .grid-wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
 
   /* CARDS */
-  .card { background: var(--paper); padding: 10px 11px; display: flex; flex-direction: column; gap: 7px; cursor: pointer; transition: background .2s; position: relative; }
+  .card { background: var(--paper); padding: 7px 9px; display: flex; flex-direction: column; gap: 5px; cursor: pointer; transition: background .2s; position: relative; }
   .card:hover { background: var(--paper-deep); }
   .card.off { opacity: 0.55; }
   .card.expanded { background: var(--paper-deep); }
   .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
-  .card-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-mute); font-weight: 500; }
-  .card-name { font-family: var(--font-display); font-weight: 400; font-size: 14px; line-height: 1.15; letter-spacing: -0.01em; color: var(--ink); margin-top: 1px; }
-  .card-state { font-size: 7px; text-transform: uppercase; letter-spacing: 0.18em; padding: 2px 5px; border-radius: 2px; font-weight: 500; flex-shrink: 0; line-height: 1.2; }
+  .card-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-mute); font-weight: 500; }
+  .card-name { font-family: var(--font-body); font-weight: 600; font-size: 13px; line-height: 1.2; letter-spacing: 0; color: var(--ink); margin-top: 1px; }
+  .card-state { font-size: 8px; text-transform: uppercase; letter-spacing: 0.14em; padding: 2px 5px; border-radius: 2px; font-weight: 600; flex-shrink: 0; line-height: 1.2; }
   .state-on { background: var(--moss); color: var(--paper); }
   .state-off { background: var(--paper-deep); color: var(--ink-mute); }
   .state-active { background: var(--terracotta); color: var(--paper); }
   .state-alert { background: var(--red); color: var(--paper); }
 
   .reading { display: flex; align-items: baseline; gap: 3px; line-height: 0.9; }
-  .reading-value { font-family: var(--font-display); font-weight: 300; font-size: 28px; letter-spacing: -0.04em; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
+  .reading-value { font-family: var(--font-body); font-weight: 500; font-size: 22px; letter-spacing: -0.02em; }
   .reading-value em { font-style: italic; color: var(--terracotta); font-weight: 400; }
 
-  .metrics-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .metrics-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .mini-metric { display: flex; flex-direction: column; gap: 1px; }
-  .mini-value { font-family: var(--font-display); font-weight: 400; font-size: 15px; letter-spacing: -0.02em; line-height: 1; }
+  .mini-value { font-family: var(--font-body); font-weight: 500; font-size: 14px; letter-spacing: -0.01em; line-height: 1; }
   .mini-value em { font-style: italic; color: var(--moss); }
   .mini-value.ok { color: var(--moss); font-style: italic; }
   .mini-value.alert { color: var(--red); font-style: italic; }
   .mini-value.warn { color: var(--terracotta); font-style: italic; }
-  .mini-label { font-size: 7px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); }
+  .mini-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); }
 
   .control { padding-top: 1px; cursor: default; }
   .slider { -webkit-appearance: none; appearance: none; width: 100%; height: 16px; background: transparent; cursor: pointer; }
