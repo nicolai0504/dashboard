@@ -281,6 +281,9 @@
   /* ZONES & GRID */
   .zone { margin-bottom: 12px; }
   .zone:last-child { margin-bottom: 4px; }
+  .device-group { margin-bottom: 4px; }
+  .device-group:last-child { margin-bottom: 0; }
+  .device-group-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-mute); padding: 5px 0 3px; }
   .zone-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 5px; }
   .zone-name { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 16px; letter-spacing: -0.01em; }
   .zone-summary { font-size: 9px; color: var(--ink-mute); letter-spacing: 0.04em; flex: 1; border-left: 1px solid var(--line); padding-left: 10px; font-style: italic; }
@@ -749,6 +752,52 @@ function DeviceCard({ device, onToggle, onSetCapability, prefs, onUpdatePrefs, c
 }
 
 // ==================== ZONE BLOCK & FLOOR COLUMN ====================
+const DEVICE_GROUPS = [
+  { key: "lys",       label: "Lys",        test: d => d.class === "light" || (d.class !== "socket" && (d.capabilities||[]).includes("dim")) },
+  { key: "termostat", label: "Termostater", test: d => d.class === "thermostat" || (d.capabilities||[]).includes("target_temperature") },
+  { key: "kontakt",   label: "Kontakter",   test: d => d.class === "socket" },
+  { key: "las",       label: "Lås",         test: d => d.class === "lock" },
+  { key: "persienne", label: "Persienner",  test: d => d.class === "blinds" || d.class === "curtain" },
+  { key: "hoytt",     label: "Høyttalere",  test: d => d.class === "speaker" },
+  { key: "sensor",    label: "Sensorer",    test: d => d.class === "sensor" },
+  { key: "strom",     label: "Strøm",       test: d => { const v = d.capabilitiesObj||{}; return (v.measure_power != null || v.meter_power != null) && v.onoff == null; } },
+  { key: "sikkerhet", label: "Sikkerhet",   test: d => { const v = d.capabilitiesObj||{}; return v.alarm_motion != null || v.alarm_contact != null || v.alarm_smoke != null || v.alarm_water != null || v.alarm_co != null; } },
+];
+
+function groupDevices(devices) {
+  const assigned = new Set();
+  const groups = [];
+  for (const grp of DEVICE_GROUPS) {
+    const matched = devices.filter(d => !assigned.has(d.id) && grp.test(d));
+    if (matched.length > 0) {
+      matched.forEach(d => assigned.add(d.id));
+      groups.push({ ...grp, devices: matched });
+    }
+  }
+  const remaining = devices.filter(d => !assigned.has(d.id));
+  if (remaining.length > 0) groups.push({ key: "annet", label: "Annet", devices: remaining });
+  return groups;
+}
+
+function DeviceGroups({ devices, onToggle, onSetCapability, prefs, onUpdatePrefs }) {
+  const groups = groupDevices(devices);
+  const multiGroup = groups.length > 1;
+  return (
+    <>
+      {groups.map(grp => (
+        <div key={grp.key} className="device-group">
+          {multiGroup && <div className="device-group-label">{grp.label}</div>}
+          <div className="grid">
+            {grp.devices.map(d => (
+              <DeviceCard key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
 function ZoneBlock({ zone, devicesByZone, onToggle, onSetCapability, prefs, onUpdatePrefs }) {
   const allDevices = devicesInZoneTree(zone, devicesByZone);
   if (allDevices.length === 0) return null;
@@ -769,11 +818,7 @@ function ZoneBlock({ zone, devicesByZone, onToggle, onSetCapability, prefs, onUp
           </div>
         )}
       </div>
-      <div className="grid">
-        {allDevices.map(d => (
-          <DeviceCard key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
-        ))}
-      </div>
+      <DeviceGroups devices={allDevices} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
     </div>
   );
 }
@@ -791,11 +836,7 @@ function FloorColumn({ floor, idx, devicesByZone, onToggle, onSetCapability, pre
       </div>
       {directDevices.length > 0 && (
         <div className="zone">
-          <div className="grid">
-            {directDevices.map(d => (
-              <DeviceCard key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
-            ))}
-          </div>
+          <DeviceGroups devices={directDevices} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
         </div>
       )}
       {(floor.children || []).map(sub => (
