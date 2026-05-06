@@ -1792,8 +1792,8 @@ function Dashboard({ homeyName, onLogout }) {
   }, [zones, devices]);
 
   const roots = tree.filter(z => devicesInZoneTree(z, devicesByZone).length > 0);
-  // Homey har typisk én rot-sone ("Hjemmet") uten egne enheter. Bruk barna (etasjer) som kolonner.
-  const floors = (roots.length === 1 && (devicesByZone[roots[0].id] || []).length === 0)
+  // Homey har én rot-sone ("Hjem") med etasjer som barn. Bruk alltid barna som kolonner.
+  const floors = (roots.length === 1 && (roots[0].children || []).length > 0)
     ? (roots[0].children || []).filter(z => devicesInZoneTree(z, devicesByZone).length > 0)
     : roots;
   const globalPrefs = prefs._global || {};
