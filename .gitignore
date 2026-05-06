@@ -1,0 +1,7 @@
+.env
+.homey-tokens.json
+.homey-prefs.json
+node_modules/
+*.bak
+*.backup
+.DS_Store

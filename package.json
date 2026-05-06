@@ -1,0 +1,12 @@
+{
+  "name": "homey-cloud-dashboard",
+  "version": "1.0.0",
+  "description": "Web-dashboard for Homey via OAuth2 og Athom Cloud API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

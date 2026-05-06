@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hjemmet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,30..100&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f5f0e6;
+    --paper-deep: #ebe3d3;
+    --ink: #1a1814;
+    --ink-soft: #5c5650;
+    --ink-mute: #8a8378;
+    --moss: #2d4030;
+    --moss-deep: #1a2a1d;
+    --terracotta: #c66b3d;
+    --terracotta-soft: #e8a578;
+    --gold: #b8893f;
+    --red: #a23a2a;
+    --line: rgba(26, 24, 20, 0.12);
+    --line-soft: rgba(26, 24, 20, 0.06);
+
+    --font-display: 'Fraunces', 'Times New Roman', serif;
+    --font-body: 'Inter Tight', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 1.4;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(at 15% 0%, rgba(198, 107, 61, 0.04) 0%, transparent 50%),
+      radial-gradient(at 95% 100%, rgba(45, 64, 48, 0.05) 0%, transparent 50%);
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1, 0 0 0 0 0.09, 0 0 0 0 0.08, 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.5; mix-blend-mode: multiply; z-index: 1;
+  }
+  a { color: var(--terracotta); text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+  .frame { padding: 0 20px; position: relative; z-index: 2; }
+
+  /* SETUP */
+  .setup { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .setup-card { background: var(--paper); border: 1px solid var(--line); padding: 48px; max-width: 500px; width: 100%; box-shadow: 0 24px 60px -20px rgba(26, 24, 20, 0.15); }
+  .setup-mark { font-family: var(--font-display); font-weight: 300; font-size: 56px; line-height: 1; letter-spacing: -0.04em; font-variation-settings: 'opsz' 144, 'SOFT' 30; margin-bottom: 4px; }
+  .setup-mark em { font-style: italic; font-weight: 400; color: var(--terracotta); }
+  .setup-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); margin-bottom: 28px; }
+  .setup-text { font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin-bottom: 24px; }
+  .setup-text em { font-family: var(--font-display); font-style: italic; color: var(--terracotta); }
+  .login-btn { display: block; width: 100%; padding: 14px; text-align: center; background: var(--ink); color: var(--paper); border: none; cursor: pointer; font-family: var(--font-body); font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; transition: background .2s; }
+  .login-btn:hover { background: var(--moss); }
+  .error-box { background: rgba(162, 58, 42, 0.08); color: var(--red); padding: 10px 14px; font-size: 11px; margin-top: 16px; border-left: 2px solid var(--red); }
+
+  /* MASTHEAD */
+  .masthead { padding: 12px 0 10px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: baseline; gap: 12px; }
+  .brand-mark { font-family: var(--font-display); font-weight: 300; font-size: 26px; line-height: 1; letter-spacing: -0.03em; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
+  .brand-mark em { font-style: italic; font-weight: 400; color: var(--terracotta); }
+  .brand-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); }
+  .meta { display: flex; align-items: center; gap: 14px; font-size: 10px; color: var(--ink-mute); letter-spacing: 0.08em; flex: 1; justify-content: flex-end; }
+  .meta-line { display: flex; align-items: center; gap: 6px; }
+  .pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--moss); animation: pulse 2s infinite; }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+  .actions { display: flex; gap: 4px; }
+  .icon-btn { width: 26px; height: 26px; border: 1px solid var(--line); background: transparent; border-radius: 50%; cursor: pointer; color: var(--ink-soft); display: inline-flex; align-items: center; justify-content: center; transition: all .2s; font-size: 12px; }
+  .icon-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .icon-btn.active { background: var(--terracotta); color: var(--paper); border-color: var(--terracotta); }
+  .icon-btn.spinning { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; padding: 6px 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tab { background: transparent; border: none; padding: 5px 12px; font-family: var(--font-body); font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); cursor: pointer; border-bottom: 1px solid transparent; margin-bottom: -7px; white-space: nowrap; transition: color .2s; }
+  .tab:hover { color: var(--ink-soft); }
+  .tab.active { color: var(--ink); border-bottom-color: var(--terracotta); }
+  .tab em { font-family: var(--font-display); font-style: italic; text-transform: none; letter-spacing: 0; color: var(--terracotta); margin-right: 4px; font-size: 12px; }
+
+  .error-banner { background: rgba(162, 58, 42, 0.08); color: var(--red); padding: 8px 16px; font-size: 11px; border-left: 2px solid var(--red); margin: 10px 0; }
+
+  /* ====== HOME VIEW (modules) ====== */
+  .home-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 0 10px; gap: 12px; flex-wrap: wrap; }
+  .home-toolbar-info { font-size: 10px; color: var(--ink-mute); letter-spacing: 0.12em; text-transform: uppercase; font-style: italic; }
+  .edit-actions { display: flex; gap: 6px; }
+  .pill-btn { background: transparent; border: 1px solid var(--line); padding: 5px 11px; font-family: var(--font-body); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft); transition: all .2s; }
+  .pill-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .pill-btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .pill-btn.primary:hover { background: var(--moss); border-color: var(--moss); }
+  .pill-btn.terracotta { background: var(--terracotta); color: var(--paper); border-color: var(--terracotta); }
+  .pill-btn.terracotta:hover { background: var(--ink); border-color: var(--ink); }
+
+  .home-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding-bottom: 14px; }
+  .module {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    min-height: 0;
+  }
+  .module.span-2 { grid-column: span 2; }
+  .module.span-3 { grid-column: span 3; }
+  .module-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .module-title {
+    font-family: var(--font-display);
+    font-weight: 400; font-style: italic;
+    font-size: 17px; letter-spacing: -0.01em;
+  }
+  .module-title em { font-weight: 300; color: var(--terracotta); margin-right: 4px; }
+  .module-sub { font-size: 9px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.18em; }
+
+  /* Edit mode */
+  .edit-mode .module {
+    cursor: grab;
+    background: linear-gradient(135deg, var(--paper) 0%, var(--paper-deep) 100%);
+    border-color: var(--terracotta);
+    border-style: dashed;
+  }
+  .edit-mode .module:active { cursor: grabbing; }
+  .edit-mode .module.dragging { opacity: 0.4; }
+  .edit-mode .module.drop-target { border-style: solid; box-shadow: 0 0 0 2px var(--terracotta); }
+  .module-edit-controls {
+    display: none;
+    position: absolute;
+    top: 6px; right: 6px;
+    gap: 4px;
+    background: var(--paper-deep);
+    padding: 4px;
+    border: 1px solid var(--terracotta);
+  }
+  .edit-mode .module-edit-controls { display: flex; }
+  .edit-btn {
+    width: 22px; height: 22px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--ink); cursor: pointer;
+    font-size: 11px;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all .15s;
+  }
+  .edit-btn:hover { background: var(--ink); color: var(--paper); }
+  .edit-btn.danger:hover { background: var(--red); color: var(--paper); border-color: var(--red); }
+
+  /* Module settings drawer */
+  .module-settings-drawer {
+    background: rgba(26, 24, 20, 0.04);
+    border-left: 2px solid var(--terracotta);
+    padding: 10px 12px;
+    margin-top: 6px;
+  }
+  .settings-title { font-size: 8px; color: var(--terracotta); text-transform: uppercase; letter-spacing: 0.22em; margin-bottom: 8px; font-weight: 500; }
+  .settings-checks { display: flex; flex-wrap: wrap; gap: 6px; }
+  .settings-check { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; padding: 3px 7px; background: var(--paper); border: 1px solid var(--line); cursor: pointer; user-select: none; transition: border-color .15s; }
+  .settings-check:hover { border-color: var(--terracotta); }
+  .settings-check input { cursor: pointer; accent-color: var(--terracotta); margin: 0; }
+  .settings-select {
+    width: 100%; padding: 6px 8px;
+    background: var(--paper); border: 1px solid var(--line);
+    font-family: var(--font-body); font-size: 11px;
+    color: var(--ink);
+  }
+  .settings-hint { font-size: 9px; color: var(--ink-mute); margin-top: 6px; font-style: italic; }
+
+  /* Module picker (overlay) */
+  .picker-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(26, 24, 20, 0.5);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .picker {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 28px;
+    max-width: 480px; width: 100%;
+    box-shadow: 0 24px 80px -20px rgba(0,0,0,0.4);
+  }
+  .picker-title {
+    font-family: var(--font-display);
+    font-weight: 400; font-style: italic;
+    font-size: 22px; letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .picker-sub { font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 18px; }
+  .picker-list { display: flex; flex-direction: column; gap: 6px; }
+  .picker-item {
+    background: transparent; border: 1px solid var(--line);
+    padding: 10px 14px; cursor: pointer;
+    font-family: var(--font-body); color: var(--ink);
+    transition: all .2s;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+    text-align: left;
+  }
+  .picker-item:hover:not(:disabled) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .picker-item:disabled { opacity: 0.4; }
+  .picker-item-name { font-family: var(--font-display); font-style: italic; font-size: 14px; }
+  .picker-item-desc { font-size: 10px; color: var(--ink-mute); letter-spacing: 0.05em; }
+  .picker-item:hover .picker-item-desc { color: var(--paper); opacity: 0.7; }
+  .picker-close {
+    margin-top: 18px; width: 100%;
+    background: transparent; border: 1px solid var(--line);
+    padding: 9px; cursor: pointer;
+    font-family: var(--font-body); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--ink-soft);
+  }
+  .picker-close:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* HAN module */
+  .han-value { font-family: var(--font-display); font-weight: 300; font-size: 56px; letter-spacing: -0.04em; line-height: 1; font-variation-settings: 'opsz' 144, 'SOFT' 30; margin-top: 4px; }
+  .han-value em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+  .han-value .unit { font-size: 0.35em; font-style: italic; color: var(--ink-mute); letter-spacing: 0; }
+  .han-detail { font-size: 10px; color: var(--ink-mute); margin-top: 2px; font-style: italic; }
+  .sparkline { width: 100%; height: 36px; margin-top: 8px; }
+  .sparkline path { fill: none; stroke: var(--terracotta); stroke-width: 1.2; }
+  .sparkline .area { fill: var(--terracotta); opacity: 0.08; stroke: none; }
+
+  /* Weather module */
+  .weather-main { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
+  .weather-temp { font-family: var(--font-display); font-weight: 300; font-size: 56px; letter-spacing: -0.04em; line-height: 1; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
+  .weather-temp em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+  .weather-detail { font-size: 11px; color: var(--ink-mute); font-style: italic; line-height: 1.4; }
+  .weather-detail span { color: var(--moss); font-style: normal; }
+  .weather-mini { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+  .weather-mini .mini-metric { display: flex; flex-direction: column; gap: 1px; }
+  .weather-mini .mini-value { font-family: var(--font-display); font-weight: 400; font-size: 16px; letter-spacing: -0.02em; line-height: 1; }
+  .weather-mini .mini-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); }
+
+  /* Scenes module */
+  .scene-list { display: flex; flex-direction: column; gap: 6px; }
+  .scene-btn { background: transparent; border: 1px solid var(--line); padding: 8px 12px; text-align: left; cursor: pointer; font-family: var(--font-body); color: var(--ink); transition: all .2s; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .scene-btn:hover:not(:disabled) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .scene-btn.ran { background: var(--moss); color: var(--paper); border-color: var(--moss); }
+  .scene-name { font-family: var(--font-display); font-style: italic; font-size: 14px; font-weight: 400; }
+  .scene-arrow { font-size: 10px; opacity: 0.5; }
+
+  /* Favorites module */
+  .favorites-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .favorites-grid > .card { padding: 9px 10px; }
+
+  /* Zones overview module */
+  .zones-overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .zone-tile { background: var(--paper); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+  .zone-tile-name { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 14px; line-height: 1.1; }
+  .zone-tile-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .zone-tile-stat { display: flex; flex-direction: column; gap: 1px; }
+  .zone-tile-val { font-family: var(--font-display); font-weight: 400; font-size: 14px; letter-spacing: -0.02em; line-height: 1; }
+  .zone-tile-val em { font-style: italic; color: var(--moss); }
+  .zone-tile-val.alert { color: var(--red); font-style: italic; }
+  .zone-tile-lbl { font-size: 7px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); }
+
+  /* ====== STYRING (3-col floors) ====== */
+  .columns { display: grid; gap: 0; padding-top: 14px; }
+  .col { padding: 0 18px; border-left: 1px solid var(--line-soft); min-width: 0; }
+  .col:first-child { padding-left: 0; border-left: none; }
+  .col-head { padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .col-title { font-family: var(--font-display); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; line-height: 1; font-variation-settings: 'opsz' 144; }
+  .col-title em { font-style: italic; font-weight: 300; color: var(--terracotta); margin-right: 4px; }
+  .col-subtitle { font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.18em; white-space: nowrap; }
+
+  /* ZONES & GRID */
+  .zone { margin-bottom: 18px; }
+  .zone:last-child { margin-bottom: 4px; }
+  .zone-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+  .zone-name { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 16px; letter-spacing: -0.01em; }
+  .zone-summary { font-size: 9px; color: var(--ink-mute); letter-spacing: 0.04em; flex: 1; border-left: 1px solid var(--line); padding-left: 10px; font-style: italic; }
+  .zone-summary span { color: var(--moss); font-style: normal; font-weight: 500; }
+
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .grid-wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+
+  /* CARDS */
+  .card { background: var(--paper); padding: 10px 11px; display: flex; flex-direction: column; gap: 7px; cursor: pointer; transition: background .2s; position: relative; }
+  .card:hover { background: var(--paper-deep); }
+  .card.off { opacity: 0.55; }
+  .card.expanded { background: var(--paper-deep); }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+  .card-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-mute); font-weight: 500; }
+  .card-name { font-family: var(--font-display); font-weight: 400; font-size: 14px; line-height: 1.15; letter-spacing: -0.01em; color: var(--ink); margin-top: 1px; }
+  .card-state { font-size: 7px; text-transform: uppercase; letter-spacing: 0.18em; padding: 2px 5px; border-radius: 2px; font-weight: 500; flex-shrink: 0; line-height: 1.2; }
+  .state-on { background: var(--moss); color: var(--paper); }
+  .state-off { background: var(--paper-deep); color: var(--ink-mute); }
+  .state-active { background: var(--terracotta); color: var(--paper); }
+  .state-alert { background: var(--red); color: var(--paper); }
+
+  .reading { display: flex; align-items: baseline; gap: 3px; line-height: 0.9; }
+  .reading-value { font-family: var(--font-display); font-weight: 300; font-size: 28px; letter-spacing: -0.04em; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
+  .reading-value em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+
+  .metrics-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .mini-metric { display: flex; flex-direction: column; gap: 1px; }
+  .mini-value { font-family: var(--font-display); font-weight: 400; font-size: 15px; letter-spacing: -0.02em; line-height: 1; }
+  .mini-value em { font-style: italic; color: var(--moss); }
+  .mini-value.ok { color: var(--moss); font-style: italic; }
+  .mini-value.alert { color: var(--red); font-style: italic; }
+  .mini-value.warn { color: var(--terracotta); font-style: italic; }
+  .mini-label { font-size: 7px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); }
+
+  .control { padding-top: 1px; cursor: default; }
+  .slider { -webkit-appearance: none; appearance: none; width: 100%; height: 16px; background: transparent; cursor: pointer; }
+  .slider::-webkit-slider-runnable-track { height: 1px; background: var(--ink); }
+  .slider::-moz-range-track { height: 1px; background: var(--ink); }
+  .slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; background: var(--terracotta); border-radius: 50%; margin-top: -5.5px; box-shadow: 0 0 0 3px var(--paper); transition: transform .15s; }
+  .slider::-webkit-slider-thumb:active { transform: scale(1.2); }
+  .slider::-moz-range-thumb { width: 12px; height: 12px; background: var(--terracotta); border-radius: 50%; border: none; box-shadow: 0 0 0 3px var(--paper); }
+  .slider-dim::-webkit-slider-thumb { background: var(--gold); }
+  .slider-dim::-moz-range-thumb { background: var(--gold); }
+  .slider-marks { display: flex; justify-content: space-between; font-size: 7px; color: var(--ink-mute); letter-spacing: 0.15em; margin-top: 1px; text-transform: uppercase; }
+
+  .toggle { align-self: flex-start; border: 1px solid var(--ink); background: transparent; color: var(--ink); padding: 4px 9px; font-family: var(--font-body); font-size: 8px; text-transform: uppercase; letter-spacing: 0.2em; transition: all .2s; }
+  .toggle:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+  .toggle.is-on { background: var(--moss); color: var(--paper); border-color: var(--moss); }
+
+  .featured .card-name::first-letter { font-family: var(--font-display); font-style: italic; color: var(--terracotta); font-weight: 300; }
+
+  .settings { background: rgba(26, 24, 20, 0.04); border-left: 2px solid var(--terracotta); padding: 10px; margin-top: 4px; cursor: default; animation: slideDown .15s ease-out; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ====== SIKKERHET ====== */
+  .security-status {
+    padding: 18px 22px;
+    margin: 14px 0;
+    border-left: 3px solid var(--moss);
+    background: rgba(45, 64, 48, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .security-status.alert { border-left-color: var(--red); background: rgba(162, 58, 42, 0.06); }
+  .security-status-icon {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 36px; color: var(--moss); line-height: 1;
+  }
+  .security-status.alert .security-status-icon { color: var(--red); }
+  .security-status-text { flex: 1; }
+  .security-status-headline { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 22px; line-height: 1.1; }
+  .security-status-headline em { font-weight: 300; color: var(--moss); }
+  .security-status.alert .security-status-headline em { color: var(--red); }
+  .security-status-detail { font-size: 11px; color: var(--ink-soft); margin-top: 4px; font-style: italic; }
+
+  .sec-section { margin-bottom: 22px; }
+  .sec-section-head {
+    display: flex; align-items: baseline;
+    justify-content: space-between; gap: 12px;
+    padding-bottom: 8px; margin-bottom: 10px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .sec-section-title {
+    font-family: var(--font-display); font-weight: 400; font-style: italic;
+    font-size: 18px; letter-spacing: -0.01em;
+  }
+  .sec-section-title em { font-weight: 300; color: var(--terracotta); margin-right: 4px; }
+  .sec-section-count { font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.18em; }
+
+  .event-log { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); max-height: 320px; overflow-y: auto; }
+  .event-row {
+    background: var(--paper);
+    padding: 8px 12px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12px;
+  }
+  .event-row.alert { background: rgba(162, 58, 42, 0.04); }
+  .event-time { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--ink-mute); flex-shrink: 0; min-width: 48px; }
+  .event-icon { font-size: 14px; flex-shrink: 0; }
+  .event-text { flex: 1; line-height: 1.3; }
+  .event-text strong { font-weight: 600; }
+  .event-zone { font-size: 9px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.15em; flex-shrink: 0; }
+
+  .empty { color: var(--ink-mute); padding: 24px; text-align: center; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-style: italic; }
+
+  .colophon { padding: 12px 0; text-align: center; color: var(--ink-mute); font-size: 9px; text-transform: uppercase; letter-spacing: 0.25em; border-top: 1px solid var(--line); margin-top: 14px; }
+  .colophon em { font-family: var(--font-display); font-style: italic; font-weight: 300; text-transform: none; letter-spacing: 0; font-size: 11px; color: var(--ink-soft); }
+
+  .flow-list { display: flex; flex-direction: column; gap: 6px; max-width: 700px; padding-top: 14px; }
+  .flow-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--paper); border: 1px solid var(--line); gap: 12px; }
+  .flow-row .flow-name { font-family: var(--font-display); font-style: italic; font-size: 15px; flex: 1; }
+  .run-btn { background: var(--ink); color: var(--paper); border: none; padding: 6px 14px; font-family: var(--font-body); font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em; }
+  .run-btn:disabled { background: var(--ink-mute); }
+  .run-btn.done { background: var(--moss); }
+
+  .single-view { padding-top: 14px; }
+
+  @media (max-width: 1100px) {
+    .home-grid { grid-template-columns: repeat(2, 1fr); }
+    .module.span-3 { grid-column: span 2; }
+  }
+  @media (max-width: 700px) {
+    .home-grid { grid-template-columns: 1fr; }
+    .module.span-2, .module.span-3 { grid-column: span 1; }
+    .columns { grid-template-columns: 1fr !important; }
+    .col { padding: 0; border-left: none; border-top: 1px solid var(--line-soft); padding-top: 14px; margin-top: 14px; }
+    .col:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef, useMemo } = React;
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { headers: { "Content-Type": "application/json" }, ...opts });
+  if (!r.ok) throw new Error(`${r.status}: ${await r.text()}`);
+  return r.json();
+}
+
+const ROMAN = ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
+
+const METRIC_DEFS = {
+  measure_temperature: { label: "Temp", suffix: "°", fmt: v => Number(v).toFixed(1) },
+  measure_humidity: { label: "Fukt", suffix: "%", fmt: v => Math.round(Number(v)) },
+  measure_co2: { label: "CO₂", suffix: "", fmt: v => Math.round(Number(v)), warn: v => v > 1000, alert: v => v > 1500 },
+  measure_co: { label: "CO", suffix: " ppm", fmt: v => Math.round(Number(v)) },
+  measure_pm25: { label: "PM2.5", suffix: " µg", fmt: v => Math.round(Number(v)) },
+  measure_power: { label: "Effekt", suffix: "W", fmt: v => Number(v).toFixed(0) },
+  measure_voltage: { label: "Volt", suffix: "V", fmt: v => Number(v).toFixed(1) },
+  measure_current: { label: "Strøm", suffix: "A", fmt: v => Number(v).toFixed(2) },
+  measure_battery: { label: "Batteri", suffix: "%", fmt: v => Math.round(Number(v)), warn: v => v < 20, alert: v => v < 10 },
+  measure_luminance: { label: "Lux", suffix: "", fmt: v => Math.round(Number(v)) },
+  measure_pressure: { label: "Trykk", suffix: " hPa", fmt: v => Math.round(Number(v)) },
+  measure_rain: { label: "Regn", suffix: " mm", fmt: v => Number(v).toFixed(1) },
+  measure_wind_strength: { label: "Vind", suffix: " m/s", fmt: v => Number(v).toFixed(1) },
+  measure_noise: { label: "Støy", suffix: " dB", fmt: v => Math.round(Number(v)) },
+  meter_power: { label: "Forbruk", suffix: " kWh", fmt: v => Number(v).toFixed(2) },
+  meter_water: { label: "Vann", suffix: " m³", fmt: v => Number(v).toFixed(2) },
+  alarm_motion: { label: "Bevegelse", fmt: v => v ? "Aktiv" : "Rolig", state: v => v ? "warn" : "ok" },
+  alarm_contact: { label: "Kontakt", fmt: v => v ? "Åpen" : "Lukket", state: v => v ? "alert" : "ok" },
+  alarm_smoke: { label: "Røyk", fmt: v => v ? "Røyk!" : "OK", state: v => v ? "alert" : "ok" },
+  alarm_water: { label: "Lekkasje", fmt: v => v ? "Vann!" : "OK", state: v => v ? "alert" : "ok" },
+  alarm_co: { label: "CO-alarm", fmt: v => v ? "CO!" : "OK", state: v => v ? "alert" : "ok" },
+  alarm_tamper: { label: "Tukling", fmt: v => v ? "Ja" : "Nei", state: v => v ? "alert" : "ok" },
+};
+
+function deviceLabel(device, vals) {
+  if (device.class === "light") return "Lys";
+  if (device.class === "thermostat") return "Termostat";
+  if (device.class === "socket") return "Kontakt";
+  if (device.class === "lock") return "Lås";
+  if (device.class === "speaker") return "Høyttaler";
+  if (device.class === "blinds" || device.class === "curtain") return "Persienne";
+  if (vals.alarm_motion != null) return "Bevegelse";
+  if (vals.alarm_contact != null) return "Vindu/dør";
+  if (vals.alarm_smoke != null) return "Røyk";
+  if (vals.alarm_water != null) return "Lekkasje";
+  if (device.class === "sensor") return "Sensor";
+  if (vals.measure_power != null && !vals.onoff) return "Strømmåler";
+  return "Enhet";
+}
+
+function buildZoneTree(zones) {
+  const list = Object.values(zones);
+  const byParent = {};
+  list.forEach(z => {
+    const p = z.parent || "_root";
+    (byParent[p] = byParent[p] || []).push(z);
+  });
+  const sortFn = (a, b) => (a.order ?? a.index ?? 0) - (b.order ?? b.index ?? 0) || a.name.localeCompare(b.name, "no");
+  const attach = (zone) => ({
+    ...zone,
+    children: (byParent[zone.id] || []).sort(sortFn).map(attach),
+  });
+  const ids = new Set(list.map(z => z.id));
+  const roots = list.filter(z => !z.parent || !ids.has(z.parent));
+  return roots.sort(sortFn).map(attach);
+}
+
+function devicesInZoneTree(zone, devicesByZone) {
+  const own = devicesByZone[zone.id] || [];
+  const fromChildren = (zone.children || []).flatMap(c => devicesInZoneTree(c, devicesByZone));
+  return [...own, ...fromChildren];
+}
+
+function findHanMeter(devices, configuredId) {
+  if (configuredId) {
+    const found = devices.find(d => d.id === configuredId);
+    if (found) return found;
+  }
+  const nameMatches = devices.filter(d => {
+    const n = (d.name || "").toLowerCase();
+    return (n.includes("han") || n.includes("tibber") || n.includes("hovedmål") || n.includes("strømmåler") ||
+            (n.includes("shelly") && (n.includes("em") || n.includes("3em"))) ||
+            n.includes("pulse") || n.includes("p1")) &&
+           d.capabilitiesObj?.measure_power != null;
+  });
+  if (nameMatches.length > 0) return nameMatches[0];
+  const withPower = devices.filter(d => d.capabilitiesObj?.measure_power?.value != null);
+  if (withPower.length === 0) return null;
+  return withPower.sort((a, b) => (b.capabilitiesObj.measure_power.value || 0) - (a.capabilitiesObj.measure_power.value || 0))[0];
+}
+
+function findOutdoorSensor(devices, zones, configuredId) {
+  if (configuredId) {
+    const found = devices.find(d => d.id === configuredId);
+    if (found) return found;
+  }
+  const outdoorWords = ["ute", "uteplass", "balkong", "garden", "hage", "værstasjon", "veranda", "outdoor"];
+  return devices.find(d => {
+    if (d.capabilitiesObj?.measure_temperature?.value == null) return false;
+    const n = (d.name || "").toLowerCase();
+    const zoneName = (zones[d.zone]?.name || "").toLowerCase();
+    return outdoorWords.some(w => n.includes(w) || zoneName.includes(w));
+  });
+}
+
+function formatDecimal(num, decimals = 1) {
+  const n = Number(num);
+  const fixed = n.toFixed(decimals);
+  const [intPart, decPart] = fixed.split(".");
+  return { intPart, decPart };
+}
+
+function timeAgo(ts) {
+  const diff = Date.now() - ts;
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return `${sec}s`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}t`;
+  return `${Math.floor(hr / 24)}d`;
+}
+
+// ==================== SETUP ====================
+function SetupScreen({ error }) {
+  return (
+    <div className="setup">
+      <div className="setup-card">
+        <div className="setup-mark">Hjem<em>et</em></div>
+        <div className="setup-tag">Et levende dashbord · sky-tilkobling</div>
+        <p className="setup-text">Du er i ferd med å logge inn på Homey-kontoen din via Athoms <em>offisielle skytjeneste</em>. Etter pålogging henter dashbordet enhetene dine, sensorene og hjemmets stille rytmer.</p>
+        <button className="login-btn" onClick={() => window.location.href = "/auth/login"}>
+          Logg inn med Homey
+        </button>
+        {error && <div className="error-box">{error}</div>}
+      </div>
+    </div>
+  );
+}
+
+// ==================== DEVICE CARD ====================
+function DeviceCard({ device, onToggle, onSetCapability, prefs, onUpdatePrefs, compact }) {
+  const cap = device.capabilities || [];
+  const vals = device.capabilitiesObj || {};
+  const isOn = vals.onoff?.value;
+  const hasOnoff = cap.includes("onoff");
+  const hasDim = cap.includes("dim");
+  const hasTargetTemp = cap.includes("target_temperature");
+
+  const allMetricCaps = cap.filter(c => METRIC_DEFS[c]);
+  const devicePrefs = prefs[device.id] || {};
+  const visibleMetrics = devicePrefs.metrics || allMetricCaps;
+
+  const [expanded, setExpanded] = useState(false);
+  const [toggling, setToggling] = useState(false);
+  const [localDim, setLocalDim] = useState(vals.dim?.value ?? 0);
+  const [localTargetTemp, setLocalTargetTemp] = useState(vals.target_temperature?.value ?? 20);
+  const lastInteract = useRef(0);
+
+  useEffect(() => {
+    if (Date.now() - lastInteract.current > 2500 && vals.dim?.value != null) setLocalDim(vals.dim.value);
+  }, [vals.dim?.value]);
+  useEffect(() => {
+    if (Date.now() - lastInteract.current > 2500 && vals.target_temperature?.value != null) setLocalTargetTemp(vals.target_temperature.value);
+  }, [vals.target_temperature?.value]);
+
+  const handleToggle = async (e) => {
+    e.stopPropagation();
+    setToggling(true);
+    await onToggle(device.id, !isOn);
+    setToggling(false);
+  };
+  const handleDimChange = (e) => { lastInteract.current = Date.now(); setLocalDim(parseFloat(e.target.value)); };
+  const handleDimRelease = () => onSetCapability(device.id, "dim", localDim);
+  const handleTempChange = (e) => { lastInteract.current = Date.now(); setLocalTargetTemp(parseFloat(e.target.value)); };
+  const handleTempRelease = () => onSetCapability(device.id, "target_temperature", localTargetTemp);
+  const handleMetricToggle = (capName) => {
+    const next = visibleMetrics.includes(capName) ? visibleMetrics.filter(c => c !== capName) : [...visibleMetrics, capName];
+    onUpdatePrefs(device.id, { ...devicePrefs, metrics: next });
+  };
+
+  const tempCap = vals.target_temperature?.options || {};
+  const tempMin = tempCap.min ?? 5;
+  const tempMax = tempCap.max ?? 30;
+  const tempStep = tempCap.step ?? 0.5;
+  const stopProp = (e) => e.stopPropagation();
+  const label = deviceLabel(device, vals);
+  const isFeatured = hasDim && isOn;
+
+  let stateBadge = null;
+  if (hasOnoff) {
+    stateBadge = <span className={`card-state ${isOn ? "state-on" : "state-off"}`}>{isOn ? "På" : "Av"}</span>;
+  } else if (vals.alarm_motion?.value) {
+    stateBadge = <span className="card-state state-active">Aktiv</span>;
+  } else if (vals.alarm_contact != null) {
+    stateBadge = <span className={`card-state ${vals.alarm_contact.value ? "state-alert" : "state-off"}`}>{vals.alarm_contact.value ? "Åpen" : "Lukket"}</span>;
+  } else if (vals.alarm_smoke?.value || vals.alarm_water?.value || vals.alarm_co?.value) {
+    stateBadge = <span className="card-state state-alert">Alarm!</span>;
+  } else if (vals.measure_power?.value > 0) {
+    stateBadge = <span className="card-state state-active">Live</span>;
+  }
+
+  return (
+    <article
+      className={`card ${isOn === false ? "off" : ""} ${expanded ? "expanded" : ""} ${isFeatured ? "featured" : ""}`}
+      onClick={() => setExpanded(e => !e)}
+    >
+      <div className="card-head">
+        <div>
+          <div className="card-label">{label}</div>
+          <div className="card-name">{device.name}</div>
+        </div>
+        {stateBadge}
+      </div>
+
+      {hasTargetTemp && (
+        <>
+          <div className="metrics-row">
+            {vals.measure_temperature?.value != null && (
+              <div className="mini-metric"><div className="mini-value">{Number(vals.measure_temperature.value).toFixed(1)}°</div><div className="mini-label">Nå</div></div>
+            )}
+            <div className="mini-metric"><div className="mini-value"><em>{Number(localTargetTemp).toFixed(1)}°</em></div><div className="mini-label">Ønsket</div></div>
+          </div>
+          <div className="control" onClick={stopProp}>
+            <input type="range" min={tempMin} max={tempMax} step={tempStep} value={localTargetTemp}
+              onChange={handleTempChange} onMouseUp={handleTempRelease} onTouchEnd={handleTempRelease} onKeyUp={handleTempRelease} className="slider" />
+            <div className="slider-marks"><span>{tempMin}°</span><span>{tempMax}°</span></div>
+          </div>
+        </>
+      )}
+
+      {hasDim && isOn && !hasTargetTemp && (
+        <>
+          <div className="reading"><div className="reading-value">{Math.round(localDim * 100)}<em>%</em></div></div>
+          <div className="control" onClick={stopProp}>
+            <input type="range" min={0} max={1} step={0.01} value={localDim}
+              onChange={handleDimChange} onMouseUp={handleDimRelease} onTouchEnd={handleDimRelease} onKeyUp={handleDimRelease} className="slider slider-dim" />
+            <div className="slider-marks"><span>av</span><span>full</span></div>
+          </div>
+        </>
+      )}
+
+      {!hasTargetTemp && (
+        <div className="metrics-row">
+          {visibleMetrics.map(capName => {
+            const def = METRIC_DEFS[capName];
+            const v = vals[capName]?.value;
+            if (!def || v == null || capName === "dim") return null;
+            const stateClass = def.state ? def.state(v) : (def.alert?.(v) ? "alert" : def.warn?.(v) ? "warn" : "");
+            return (
+              <div key={capName} className="mini-metric">
+                <div className={`mini-value ${stateClass}`}>{def.fmt(v)}{def.suffix || ""}</div>
+                <div className="mini-label">{def.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {hasOnoff && !hasDim && !hasTargetTemp && (
+        <button className={`toggle ${isOn ? "is-on" : ""}`} onClick={handleToggle} disabled={toggling}>
+          {toggling ? "…" : isOn ? "Slå av" : "Slå på"}
+        </button>
+      )}
+      {hasOnoff && hasDim && !isOn && (
+        <button className="toggle" onClick={handleToggle} disabled={toggling}>{toggling ? "…" : "Slå på"}</button>
+      )}
+      {hasOnoff && hasTargetTemp && (
+        <button className={`toggle ${isOn ? "is-on" : ""}`} onClick={handleToggle} disabled={toggling}>
+          {toggling ? "…" : isOn ? "Slå av" : "Slå på"}
+        </button>
+      )}
+
+      {expanded && allMetricCaps.length > 0 && (
+        <div className="settings" onClick={stopProp}>
+          <div className="settings-title">Vis målinger</div>
+          <div className="settings-checks">
+            {allMetricCaps.map(capName => {
+              const def = METRIC_DEFS[capName];
+              return (
+                <label key={capName} className="settings-check">
+                  <input type="checkbox" checked={visibleMetrics.includes(capName)} onChange={() => handleMetricToggle(capName)} />
+                  <span>{def.label}</span>
+                </label>
+              );
+            })}
+          </div>
+          <div className="settings-hint">Klikk på kortet for å lukke</div>
+        </div>
+      )}
+    </article>
+  );
+}
+
+// ==================== ZONE BLOCK & FLOOR COLUMN ====================
+function ZoneBlock({ zone, devicesByZone, onToggle, onSetCapability, prefs, onUpdatePrefs }) {
+  const allDevices = devicesInZoneTree(zone, devicesByZone);
+  if (allDevices.length === 0) return null;
+  const lights = allDevices.filter(d => (d.capabilities || []).includes("onoff") && (d.class === "light" || (d.capabilities || []).includes("dim")));
+  const lightsOn = lights.filter(d => d.capabilitiesObj?.onoff?.value).length;
+  const temps = allDevices.filter(d => d.capabilitiesObj?.measure_temperature?.value != null);
+  const avgTemp = temps.length ? (temps.reduce((s, d) => s + Number(d.capabilitiesObj.measure_temperature.value), 0) / temps.length).toFixed(1) : null;
+
+  return (
+    <div className="zone">
+      <div className="zone-header">
+        <h3 className="zone-name">{zone.name}</h3>
+        {(lights.length > 0 || avgTemp) && (
+          <div className="zone-summary">
+            {lights.length > 0 && <><span>{lightsOn}/{lights.length}</span> lys</>}
+            {lights.length > 0 && avgTemp && " · "}
+            {avgTemp && <span>{avgTemp}°</span>}
+          </div>
+        )}
+      </div>
+      <div className="grid">
+        {allDevices.map(d => (
+          <DeviceCard key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FloorColumn({ floor, idx, devicesByZone, onToggle, onSetCapability, prefs, onUpdatePrefs }) {
+  const directDevices = devicesByZone[floor.id] || [];
+  const allDevices = devicesInZoneTree(floor, devicesByZone);
+  if (allDevices.length === 0) return null;
+  const num = ROMAN[idx + 1] || (idx + 1);
+  return (
+    <div className="col">
+      <div className="col-head">
+        <h2 className="col-title"><em>{num}.</em>{floor.name}</h2>
+        <div className="col-subtitle">{allDevices.length} enheter</div>
+      </div>
+      {directDevices.length > 0 && (
+        <div className="zone">
+          <div className="grid">
+            {directDevices.map(d => (
+              <DeviceCard key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+            ))}
+          </div>
+        </div>
+      )}
+      {(floor.children || []).map(sub => (
+        <ZoneBlock key={sub.id} zone={sub} devicesByZone={devicesByZone}
+          onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+      ))}
+    </div>
+  );
+}
+
+// ==================== HOME MODULES ====================
+
+const MODULE_TYPES = {
+  han: { title: "HAN-måler", desc: "Live effekt og forbruk", defaultSpan: 1 },
+  weather: { title: "Værmodul", desc: "Utetemperatur og forhold", defaultSpan: 1 },
+  flows: { title: "Hurtigvalg", desc: "Favoritt-flows som scene-knapper", defaultSpan: 1 },
+  favorites: { title: "Favoritt-enheter", desc: "Velg dine viktigste enheter", defaultSpan: 2 },
+  zones: { title: "Soneoversikt", desc: "Mini-status per rom", defaultSpan: 3 },
+};
+
+function HanModule({ devices, prefs, globalPrefs, isEdit, settingsOpen }) {
+  const han = useMemo(() => findHanMeter(devices, globalPrefs.hanMeterId), [devices, globalPrefs.hanMeterId]);
+  if (!han) return <div className="empty">Ingen strømmåler funnet</div>;
+  const power = han.capabilitiesObj?.measure_power?.value;
+  if (power == null) return <div className="empty">Venter på data…</div>;
+  const kw = power / 1000;
+
+  return (
+    <>
+      <div className="module-head">
+        <div className="module-title">{han.name}</div>
+        <span className="module-sub" style={{ background: "var(--terracotta)", color: "var(--paper)", padding: "2px 6px", letterSpacing: "0.2em" }}>Live</span>
+      </div>
+      <div className="han-value">
+        {kw >= 1 ? (() => {
+          const { intPart, decPart } = formatDecimal(kw, 2);
+          return <>{intPart}<em>,{decPart}</em><span className="unit"> kW</span></>;
+        })() : <>{Math.round(power)}<span className="unit"> W</span></>}
+      </div>
+      <div className="han-detail">Hjemmets samlede forbruk</div>
+    </>
+  );
+}
+
+function HanModuleSettings({ devices, globalPrefs, onUpdate }) {
+  const candidates = devices.filter(d => d.capabilitiesObj?.measure_power != null);
+  return (
+    <div className="module-settings-drawer">
+      <div className="settings-title">Velg HAN-måler</div>
+      <select className="settings-select" value={globalPrefs.hanMeterId || ""} onChange={(e) => onUpdate({ ...globalPrefs, hanMeterId: e.target.value || undefined })}>
+        <option value="">— Auto-detekter —</option>
+        {candidates.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+      </select>
+      <div className="settings-hint">Lar du dette stå på auto, prøver dashbordet å gjette riktig basert på navn.</div>
+    </div>
+  );
+}
+
+function WeatherModule({ devices, zones, globalPrefs }) {
+  const sensor = useMemo(() => findOutdoorSensor(devices, zones, globalPrefs.outdoorSensorId), [devices, zones, globalPrefs.outdoorSensorId]);
+  if (!sensor) {
+    return (
+      <>
+        <div className="module-head"><div className="module-title">Ute</div><span className="module-sub">Ingen sensor</span></div>
+        <div className="weather-detail" style={{ paddingTop: 8 }}><em>Konfigurer en utesensor i innstillingene</em></div>
+      </>
+    );
+  }
+  const v = sensor.capabilitiesObj || {};
+  const temp = v.measure_temperature?.value;
+  const humidity = v.measure_humidity?.value;
+  const wind = v.measure_wind_strength?.value;
+  const rain = v.measure_rain?.value;
+
+  return (
+    <>
+      <div className="module-head">
+        <div className="module-title">Ute</div>
+        <span className="module-sub">{sensor.name}</span>
+      </div>
+      <div className="weather-main">
+        {temp != null ? (() => {
+          const { intPart, decPart } = formatDecimal(temp, 1);
+          return <span className="weather-temp">{intPart}<em>,{decPart}</em>°</span>;
+        })() : <span className="weather-temp">–°</span>}
+      </div>
+      <div className="weather-mini">
+        {humidity != null && <div className="mini-metric"><div className="mini-value">{Math.round(humidity)}%</div><div className="mini-label">Fukt</div></div>}
+        {wind != null && <div className="mini-metric"><div className="mini-value">{Number(wind).toFixed(1)}</div><div className="mini-label">m/s</div></div>}
+        {rain != null && <div className="mini-metric"><div className="mini-value">{Number(rain).toFixed(1)}</div><div className="mini-label">mm</div></div>}
+      </div>
+    </>
+  );
+}
+
+function WeatherModuleSettings({ devices, globalPrefs, onUpdate }) {
+  const candidates = devices.filter(d => d.capabilitiesObj?.measure_temperature != null);
+  return (
+    <div className="module-settings-drawer">
+      <div className="settings-title">Velg utesensor</div>
+      <select className="settings-select" value={globalPrefs.outdoorSensorId || ""} onChange={(e) => onUpdate({ ...globalPrefs, outdoorSensorId: e.target.value || undefined })}>
+        <option value="">— Auto-detekter —</option>
+        {candidates.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+      </select>
+    </div>
+  );
+}
+
+function FlowsModule({ flows, globalPrefs, onRunFlow }) {
+  const favIds = globalPrefs.favoriteFlows || [];
+  const visible = favIds.length > 0
+    ? favIds.map(id => flows.find(f => f.id === id)).filter(Boolean)
+    : flows.filter(f => f.enabled !== false).slice(0, 4);
+  return (
+    <>
+      <div className="module-head">
+        <div className="module-title">Hurtigvalg</div>
+        <span className="module-sub">{visible.length} valg</span>
+      </div>
+      {visible.length === 0 ? (
+        <div className="empty">Ingen valgt</div>
+      ) : (
+        <div className="scene-list">
+          {visible.map(f => <SceneButton key={f.id} flow={f} onRun={onRunFlow} />)}
+        </div>
+      )}
+    </>
+  );
+}
+
+function FlowsModuleSettings({ flows, globalPrefs, onUpdate }) {
+  const favs = globalPrefs.favoriteFlows || [];
+  const enabled = flows.filter(f => f.enabled !== false);
+  const toggle = (id) => {
+    const next = favs.includes(id) ? favs.filter(x => x !== id) : [...favs, id];
+    onUpdate({ ...globalPrefs, favoriteFlows: next });
+  };
+  return (
+    <div className="module-settings-drawer">
+      <div className="settings-title">Velg favoritt-flows ({favs.length})</div>
+      <div className="settings-checks">
+        {enabled.map(f => (
+          <label key={f.id} className="settings-check">
+            <input type="checkbox" checked={favs.includes(f.id)} onChange={() => toggle(f.id)} />
+            <span>{f.name}</span>
+          </label>
+        ))}
+      </div>
+      <div className="settings-hint">Hvis ingen valgt, vises de første 4 flows-ene automatisk.</div>
+    </div>
+  );
+}
+
+function FavoritesModule({ devices, globalPrefs, onToggle, onSetCapability, prefs, onUpdatePrefs }) {
+  const favIds = globalPrefs.favoriteDevices || [];
+  const visible = favIds.map(id => devices.find(d => d.id === id)).filter(Boolean);
+  return (
+    <>
+      <div className="module-head">
+        <div className="module-title">Favoritter</div>
+        <span className="module-sub">{visible.length} enheter</span>
+      </div>
+      {visible.length === 0 ? (
+        <div className="empty">Ingen valgt</div>
+      ) : (
+        <div className="favorites-grid">
+          {visible.map(d => (
+            <DeviceCard key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function FavoritesModuleSettings({ devices, zones, globalPrefs, onUpdate }) {
+  const favs = globalPrefs.favoriteDevices || [];
+  const toggle = (id) => {
+    const next = favs.includes(id) ? favs.filter(x => x !== id) : [...favs, id];
+    onUpdate({ ...globalPrefs, favoriteDevices: next });
+  };
+  // Grupper etter sone
+  const byZone = {};
+  devices.forEach(d => {
+    const zoneName = zones[d.zone]?.name || "Uten sone";
+    (byZone[zoneName] = byZone[zoneName] || []).push(d);
+  });
+  return (
+    <div className="module-settings-drawer">
+      <div className="settings-title">Velg favoritter ({favs.length})</div>
+      <div style={{ maxHeight: 280, overflowY: "auto" }}>
+        {Object.entries(byZone).map(([zoneName, devs]) => (
+          <div key={zoneName} style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 9, color: "var(--ink-mute)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4, fontStyle: "italic" }}>{zoneName}</div>
+            <div className="settings-checks">
+              {devs.map(d => (
+                <label key={d.id} className="settings-check">
+                  <input type="checkbox" checked={favs.includes(d.id)} onChange={() => toggle(d.id)} />
+                  <span>{d.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ZonesOverviewModule({ tree, devicesByZone }) {
+  // Flat liste over alle ledige soner med enheter
+  const flat = [];
+  const collect = (zone) => {
+    const direct = devicesByZone[zone.id] || [];
+    if (direct.length > 0) flat.push({ zone, devices: direct });
+    (zone.children || []).forEach(collect);
+  };
+  tree.forEach(collect);
+
+  return (
+    <>
+      <div className="module-head">
+        <div className="module-title">Soneoversikt</div>
+        <span className="module-sub">{flat.length} rom</span>
+      </div>
+      {flat.length === 0 ? (
+        <div className="empty">Ingen rom</div>
+      ) : (
+        <div className="zones-overview">
+          {flat.map(({ zone, devices }) => {
+            const lights = devices.filter(d => (d.capabilities || []).includes("onoff") && (d.class === "light" || (d.capabilities || []).includes("dim")));
+            const lightsOn = lights.filter(d => d.capabilitiesObj?.onoff?.value).length;
+            const temps = devices.filter(d => d.capabilitiesObj?.measure_temperature?.value != null);
+            const avgTemp = temps.length ? (temps.reduce((s, d) => s + Number(d.capabilitiesObj.measure_temperature.value), 0) / temps.length).toFixed(1) : null;
+            const alarms = devices.filter(d => d.capabilitiesObj?.alarm_motion?.value || d.capabilitiesObj?.alarm_contact?.value || d.capabilitiesObj?.alarm_smoke?.value).length;
+
+            return (
+              <div key={zone.id} className="zone-tile">
+                <div className="zone-tile-name">{zone.name}</div>
+                <div className="zone-tile-stats">
+                  {lights.length > 0 && (
+                    <div className="zone-tile-stat">
+                      <div className="zone-tile-val">{lightsOn}<em>/{lights.length}</em></div>
+                      <div className="zone-tile-lbl">Lys</div>
+                    </div>
+                  )}
+                  {avgTemp && (
+                    <div className="zone-tile-stat">
+                      <div className="zone-tile-val">{avgTemp}°</div>
+                      <div className="zone-tile-lbl">Temp</div>
+                    </div>
+                  )}
+                  {alarms > 0 && (
+                    <div className="zone-tile-stat">
+                      <div className="zone-tile-val alert">{alarms}</div>
+                      <div className="zone-tile-lbl">Alarm</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
+// ==================== SCENE BUTTON ====================
+function SceneButton({ flow, onRun }) {
+  const [running, setRunning] = useState(false);
+  const [ran, setRan] = useState(false);
+  const handle = async (e) => {
+    e.stopPropagation();
+    setRunning(true);
+    try { await onRun(flow.id); } catch (e) { console.error(e); }
+    setRunning(false);
+    setRan(true);
+    setTimeout(() => setRan(false), 1800);
+  };
+  return (
+    <button className={`scene-btn ${ran ? "ran" : ""}`} onClick={handle} disabled={running}>
+      <span className="scene-name">{flow.name}</span>
+      <span className="scene-arrow">{running ? "…" : ran ? "✓" : "→"}</span>
+    </button>
+  );
+}
+
+// ==================== MODULE FRAME (drag/drop wrapper) ====================
+function ModuleFrame({ module, idx, isEdit, onMove, onRemove, onToggleSettings, settingsOpen, onDragStart, onDragOver, onDrop, isDragging, isDropTarget, children, settingsContent }) {
+  const span = module.span || MODULE_TYPES[module.type]?.defaultSpan || 1;
+  return (
+    <div
+      className={`module span-${span} ${isDragging ? "dragging" : ""} ${isDropTarget ? "drop-target" : ""}`}
+      draggable={isEdit}
+      onDragStart={(e) => onDragStart(e, idx)}
+      onDragOver={(e) => onDragOver(e, idx)}
+      onDragLeave={(e) => e.currentTarget.classList.remove("drop-target")}
+      onDrop={(e) => onDrop(e, idx)}
+    >
+      {isEdit && (
+        <div className="module-edit-controls">
+          <button className="edit-btn" onClick={() => onMove(idx, -1)} title="Flytt opp">↑</button>
+          <button className="edit-btn" onClick={() => onMove(idx, +1)} title="Flytt ned">↓</button>
+          <button className="edit-btn" onClick={() => onToggleSettings(idx)} title="Innstillinger">⚙</button>
+          <button className="edit-btn danger" onClick={() => onRemove(idx)} title="Fjern">×</button>
+        </div>
+      )}
+      {children}
+      {isEdit && settingsOpen && settingsContent}
+    </div>
+  );
+}
+
+// ==================== HOME VIEW ====================
+function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPrefs, onUpdateGlobalPrefs, onSetCapability, onToggle, onUpdatePrefs, onRunFlow }) {
+  const [isEdit, setIsEdit] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [settingsForIdx, setSettingsForIdx] = useState(null);
+  const [draggingIdx, setDraggingIdx] = useState(null);
+  const [dropTargetIdx, setDropTargetIdx] = useState(null);
+
+  const modules = globalPrefs.dashboardModules || [
+    { id: "m1", type: "han" },
+    { id: "m2", type: "weather" },
+    { id: "m3", type: "flows" },
+    { id: "m4", type: "favorites" },
+    { id: "m5", type: "zones" },
+  ];
+
+  const updateModules = (newMods) => {
+    onUpdateGlobalPrefs({ ...globalPrefs, dashboardModules: newMods });
+  };
+
+  const handleMove = (idx, dir) => {
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= modules.length) return;
+    const next = [...modules];
+    [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+    updateModules(next);
+  };
+
+  const handleRemove = (idx) => {
+    if (!confirm(`Fjerne "${MODULE_TYPES[modules[idx].type]?.title}"?`)) return;
+    updateModules(modules.filter((_, i) => i !== idx));
+  };
+
+  const handleAdd = (type) => {
+    const newMod = { id: "m" + Date.now(), type };
+    updateModules([...modules, newMod]);
+    setPickerOpen(false);
+  };
+
+  const handleToggleSettings = (idx) => {
+    setSettingsForIdx(settingsForIdx === idx ? null : idx);
+  };
+
+  const handleDragStart = (e, idx) => {
+    if (!isEdit) return;
+    setDraggingIdx(idx);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  const handleDragOver = (e, idx) => {
+    if (!isEdit || draggingIdx === null) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDropTargetIdx(idx);
+  };
+  const handleDrop = (e, dropIdx) => {
+    if (!isEdit || draggingIdx === null || draggingIdx === dropIdx) {
+      setDraggingIdx(null);
+      setDropTargetIdx(null);
+      return;
+    }
+    e.preventDefault();
+    const next = [...modules];
+    const [moved] = next.splice(draggingIdx, 1);
+    next.splice(dropIdx, 0, moved);
+    updateModules(next);
+    setDraggingIdx(null);
+    setDropTargetIdx(null);
+  };
+
+  const renderModuleContent = (mod) => {
+    switch (mod.type) {
+      case "han": return <HanModule devices={devices} prefs={prefs} globalPrefs={globalPrefs} />;
+      case "weather": return <WeatherModule devices={devices} zones={zones} globalPrefs={globalPrefs} />;
+      case "flows": return <FlowsModule flows={flows} globalPrefs={globalPrefs} onRunFlow={onRunFlow} />;
+      case "favorites": return <FavoritesModule devices={devices} globalPrefs={globalPrefs} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />;
+      case "zones": return <ZonesOverviewModule tree={tree} devicesByZone={devicesByZone} />;
+      default: return <div className="empty">Ukjent modul</div>;
+    }
+  };
+
+  const renderModuleSettings = (mod) => {
+    switch (mod.type) {
+      case "han": return <HanModuleSettings devices={devices} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
+      case "weather": return <WeatherModuleSettings devices={devices} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
+      case "flows": return <FlowsModuleSettings flows={flows} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
+      case "favorites": return <FavoritesModuleSettings devices={devices} zones={zones} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
+      case "zones": return <div className="module-settings-drawer"><div className="settings-hint">Denne modulen viser automatisk alle rom med enheter.</div></div>;
+      default: return null;
+    }
+  };
+
+  const usedTypes = new Set(modules.map(m => m.type));
+  const availableTypes = Object.keys(MODULE_TYPES).filter(t => !usedTypes.has(t));
+
+  return (
+    <>
+      <div className="home-toolbar">
+        <div className="home-toolbar-info">{modules.length} moduler · {isEdit ? "rediger-modus aktiv" : "trykk Rediger for å endre"}</div>
+        <div className="edit-actions">
+          {isEdit && availableTypes.length > 0 && (
+            <button className="pill-btn terracotta" onClick={() => setPickerOpen(true)}>+ Legg til</button>
+          )}
+          <button className={`pill-btn ${isEdit ? "primary" : ""}`} onClick={() => { setIsEdit(!isEdit); setSettingsForIdx(null); }}>
+            {isEdit ? "Ferdig" : "Rediger"}
+          </button>
+        </div>
+      </div>
+
+      <div className={`home-grid ${isEdit ? "edit-mode" : ""}`}>
+        {modules.length === 0 && (
+          <div className="empty" style={{ gridColumn: "1/-1" }}>Ingen moduler. Trykk Rediger og legg til noen.</div>
+        )}
+        {modules.map((mod, idx) => (
+          <ModuleFrame
+            key={mod.id} module={mod} idx={idx}
+            isEdit={isEdit}
+            onMove={handleMove}
+            onRemove={handleRemove}
+            onToggleSettings={handleToggleSettings}
+            settingsOpen={settingsForIdx === idx}
+            settingsContent={renderModuleSettings(mod)}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            isDragging={draggingIdx === idx}
+            isDropTarget={dropTargetIdx === idx && draggingIdx !== idx}
+          >
+            {renderModuleContent(mod)}
+          </ModuleFrame>
+        ))}
+      </div>
+
+      {pickerOpen && (
+        <div className="picker-backdrop" onClick={() => setPickerOpen(false)}>
+          <div className="picker" onClick={(e) => e.stopPropagation()}>
+            <div className="picker-title">Legg til modul</div>
+            <div className="picker-sub">Velg fra biblioteket</div>
+            <div className="picker-list">
+              {availableTypes.map(type => (
+                <button key={type} className="picker-item" onClick={() => handleAdd(type)}>
+                  <div>
+                    <div className="picker-item-name">{MODULE_TYPES[type].title}</div>
+                    <div className="picker-item-desc">{MODULE_TYPES[type].desc}</div>
+                  </div>
+                  <span style={{ opacity: 0.5 }}>+</span>
+                </button>
+              ))}
+              {availableTypes.length === 0 && <div className="empty">Alle moduler allerede lagt til</div>}
+            </div>
+            <button className="picker-close" onClick={() => setPickerOpen(false)}>Lukk</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ==================== STYRING (FLOORS) VIEW ====================
+function StyringView({ floors, devicesByZone, onToggle, onSetCapability, prefs, onUpdatePrefs }) {
+  const colTemplate = floors.length === 0 ? "1fr" : floors.map(() => "1fr").join(" ");
+  return (
+    <main className="columns" style={{ gridTemplateColumns: colTemplate }}>
+      {floors.map((floor, idx) => (
+        <FloorColumn key={floor.id} floor={floor} idx={idx} devicesByZone={devicesByZone}
+          onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+      ))}
+      {floors.length === 0 && <div className="empty">Ingen soner med enheter funnet</div>}
+    </main>
+  );
+}
+
+// ==================== SIKKERHET VIEW ====================
+function SecurityView({ devices, zones, events, onToggle, onSetCapability, prefs, onUpdatePrefs }) {
+  const motionDevices = devices.filter(d => d.capabilitiesObj?.alarm_motion != null);
+  const contactDevices = devices.filter(d => d.capabilitiesObj?.alarm_contact != null);
+  const smokeWaterDevices = devices.filter(d =>
+    d.capabilitiesObj?.alarm_smoke != null ||
+    d.capabilitiesObj?.alarm_water != null ||
+    d.capabilitiesObj?.alarm_co != null
+  );
+  const presenceDevices = devices.filter(d => {
+    const n = (d.name || "").toLowerCase();
+    return d.class === "presence" || d.class === "camera" ||
+           n.includes("kamera") || n.includes("camera");
+  });
+
+  const activeMotion = motionDevices.filter(d => d.capabilitiesObj?.alarm_motion?.value).length;
+  const openContacts = contactDevices.filter(d => d.capabilitiesObj?.alarm_contact?.value).length;
+  const activeAlarms = smokeWaterDevices.filter(d =>
+    d.capabilitiesObj?.alarm_smoke?.value || d.capabilitiesObj?.alarm_water?.value || d.capabilitiesObj?.alarm_co?.value
+  ).length;
+
+  const totalAlerts = activeAlarms + openContacts;
+  const allOk = totalAlerts === 0 && activeMotion === 0;
+
+  const Section = ({ title, icon, devices: secDevices }) => {
+    if (secDevices.length === 0) return null;
+    return (
+      <div className="sec-section">
+        <div className="sec-section-head">
+          <h2 className="sec-section-title"><em>{icon}</em>{title}</h2>
+          <span className="sec-section-count">{secDevices.length}</span>
+        </div>
+        <div className="grid-wide">
+          {secDevices.map(d => (
+            <DeviceCard key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="single-view">
+      <div className={`security-status ${!allOk ? "alert" : ""}`}>
+        <div className="security-status-icon">{allOk ? "✓" : "!"}</div>
+        <div className="security-status-text">
+          <div className="security-status-headline">
+            {allOk ? <>Alt <em>vel</em></>
+              : totalAlerts > 0 ? <>{totalAlerts} <em>varsler</em></>
+              : <>Bevegelse <em>oppdaget</em></>}
+          </div>
+          <div className="security-status-detail">
+            {[
+              activeAlarms > 0 && `${activeAlarms} alarm${activeAlarms !== 1 ? "er" : ""}`,
+              openContacts > 0 && `${openContacts} åpne dører/vinduer`,
+              activeMotion > 0 && `${activeMotion} aktive bevegelser`,
+              allOk && "Ingen sensorer utløst akkurat nå"
+            ].filter(Boolean).join(" · ")}
+          </div>
+        </div>
+      </div>
+
+      <Section title="Røyk og lekkasje" icon="α" devices={smokeWaterDevices} />
+      <Section title="Vinduer og dører" icon="β" devices={contactDevices} />
+      <Section title="Bevegelse" icon="γ" devices={motionDevices} />
+      <Section title="Tilstede / kamera" icon="δ" devices={presenceDevices} />
+
+      <div className="sec-section">
+        <div className="sec-section-head">
+          <h2 className="sec-section-title"><em>ε</em>Hendelseslogg</h2>
+          <span className="sec-section-count">{events.length} siste</span>
+        </div>
+        {events.length === 0 ? (
+          <div className="empty">Ingen registrerte hendelser ennå · loggen bygges fra og med oppstart</div>
+        ) : (
+          <div className="event-log">
+            {events.map(ev => {
+              const zoneName = zones[ev.zoneId]?.name || "";
+              return (
+                <div key={ev.id} className={`event-row ${ev.severity === "alert" ? "alert" : ""}`}>
+                  <span className="event-time">{timeAgo(ev.timestamp)}</span>
+                  <span className="event-icon">{ev.icon}</span>
+                  <span className="event-text"><strong>{ev.deviceName}</strong> {ev.description}</span>
+                  {zoneName && <span className="event-zone">{zoneName}</span>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ==================== FLOW ROW (for flows tab) ====================
+function FlowRow({ flow, onRun }) {
+  const [running, setRunning] = useState(false);
+  const [ran, setRan] = useState(false);
+  const handle = async () => {
+    setRunning(true);
+    try { await onRun(flow.id); } catch (e) { console.error(e); }
+    setRunning(false);
+    setRan(true);
+    setTimeout(() => setRan(false), 2000);
+  };
+  return (
+    <div className="flow-row">
+      <span className="flow-name">{flow.name}</span>
+      <button className={`run-btn ${ran ? "done" : ""}`} onClick={handle} disabled={running || flow.enabled === false}>
+        {running ? "Kjører" : ran ? "Kjørt ✓" : "Kjør"}
+      </button>
+    </div>
+  );
+}
+
+// ==================== DASHBOARD ====================
+function Dashboard({ homeyName, onLogout }) {
+  const [devices, setDevices] = useState([]);
+  const [flows, setFlows] = useState([]);
+  const [zones, setZones] = useState({});
+  const [prefs, setPrefs] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [tab, setTab] = useState("hjem");
+  const [lastRefresh, setLastRefresh] = useState(null);
+  const [events, setEvents] = useState([]);
+  const previousDevicesRef = useRef({});
+
+  // Sammenlign tidligere og nye enhets-tilstander, og oppdager hendelser
+  const detectEvents = useCallback((newDevices) => {
+    const prev = previousDevicesRef.current;
+    const newEvents = [];
+    const watch = [
+      { cap: "alarm_motion", desc: "registrerte bevegelse", icon: "👁", severity: "info" },
+      { cap: "alarm_contact", desc: "ble åpnet", icon: "🚪", severity: "alert" },
+      { cap: "alarm_smoke", desc: "varslet røyk", icon: "🔥", severity: "alert" },
+      { cap: "alarm_water", desc: "registrerte vann", icon: "💧", severity: "alert" },
+      { cap: "alarm_co", desc: "varslet CO", icon: "☠", severity: "alert" },
+    ];
+
+    newDevices.forEach(d => {
+      const oldD = prev[d.id];
+      if (!oldD) return;
+      watch.forEach(({ cap, desc, icon, severity }) => {
+        const oldVal = oldD.capabilitiesObj?.[cap]?.value;
+        const newVal = d.capabilitiesObj?.[cap]?.value;
+        if (oldVal === false && newVal === true) {
+          newEvents.push({
+            id: `${d.id}-${cap}-${Date.now()}-${Math.random()}`,
+            deviceId: d.id, deviceName: d.name, zoneId: d.zone,
+            description: desc, icon, severity,
+            timestamp: Date.now(),
+          });
+        }
+        // Spesialtilfelle: kontakt lukket
+        if (cap === "alarm_contact" && oldVal === true && newVal === false) {
+          newEvents.push({
+            id: `${d.id}-${cap}-close-${Date.now()}-${Math.random()}`,
+            deviceId: d.id, deviceName: d.name, zoneId: d.zone,
+            description: "ble lukket", icon: "🚪", severity: "info",
+            timestamp: Date.now(),
+          });
+        }
+      });
+    });
+
+    if (newEvents.length > 0) {
+      setEvents(prev => [...newEvents, ...prev].slice(0, 50));
+    }
+
+    const map = {};
+    newDevices.forEach(d => { map[d.id] = d; });
+    previousDevicesRef.current = map;
+  }, []);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [devMap, flowMap, zoneMap, prefsData] = await Promise.all([
+        api("/homey/manager/devices/device/"),
+        api("/homey/manager/flow/flow/"),
+        api("/homey/manager/zones/zone/"),
+        api("/prefs").catch(() => ({})),
+      ]);
+      setZones(zoneMap);
+      setPrefs(prefsData || {});
+      const devList = Object.values(devMap).map(d => ({
+        ...d, zoneId: d.zone, zoneName: zoneMap[d.zone]?.name || null,
+      }));
+      detectEvents(devList);
+      setDevices(devList);
+      setFlows(Object.values(flowMap));
+      setLastRefresh(new Date());
+    } catch (e) {
+      setError("Feil: " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [detectEvents]);
+
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const id = setInterval(load, 15000);
+    return () => clearInterval(id);
+  }, [load]);
+
+  const handleSetCapability = async (id, capability, value) => {
+    try {
+      await api(`/homey/manager/devices/device/${id}/capability/${capability}`, {
+        method: "PUT", body: JSON.stringify({ value }),
+      });
+      setDevices(prev => prev.map(d => d.id === id
+        ? { ...d, capabilitiesObj: { ...d.capabilitiesObj, [capability]: { ...d.capabilitiesObj?.[capability], value } } }
+        : d));
+    } catch (e) { console.error(e); }
+  };
+
+  const handleToggle = (id, value) => handleSetCapability(id, "onoff", value);
+
+  const handleUpdatePrefs = async (deviceId, devicePrefs) => {
+    const newPrefs = { ...prefs, [deviceId]: devicePrefs };
+    setPrefs(newPrefs);
+    try { await api("/prefs", { method: "PUT", body: JSON.stringify(newPrefs) }); }
+    catch (e) { console.error("Kunne ikke lagre prefs:", e); }
+  };
+
+  const handleUpdateGlobalPrefs = async (newGlobal) => {
+    const newPrefs = { ...prefs, _global: newGlobal };
+    setPrefs(newPrefs);
+    try { await api("/prefs", { method: "PUT", body: JSON.stringify(newPrefs) }); }
+    catch (e) { console.error("Kunne ikke lagre prefs:", e); }
+  };
+
+  const handleRunFlow = async (id) => {
+    await api(`/homey/manager/flow/flow/${id}/trigger`, { method: "PUT", body: "{}" });
+  };
+
+  const handleLogout = async () => {
+    await fetch("/auth/logout", { method: "GET" });
+    onLogout();
+  };
+
+  const { tree, devicesByZone } = useMemo(() => {
+    const t = buildZoneTree(zones);
+    const map = {};
+    devices.forEach(d => {
+      if (!d.zoneId) return;
+      (map[d.zoneId] = map[d.zoneId] || []).push(d);
+    });
+    return { tree: t, devicesByZone: map };
+  }, [zones, devices]);
+
+  const floors = tree.filter(z => devicesInZoneTree(z, devicesByZone).length > 0);
+  const globalPrefs = prefs._global || {};
+
+  const tabs = [
+    { key: "hjem", label: "Hjem", icon: "i." },
+    { key: "styring", label: "Styring", icon: "ii." },
+    { key: "sikkerhet", label: "Sikkerhet", icon: "iii." },
+    { key: "alle", label: `Alle (${devices.length})` },
+    { key: "flows", label: `Flows (${flows.length})` },
+  ];
+
+  return (
+    <>
+      <header className="masthead">
+        <div className="brand">
+          <div className="brand-mark">Hjem<em>et</em></div>
+          <div className="brand-tag">{lastRefresh ? lastRefresh.toLocaleDateString("no-NO", { weekday: "long", day: "numeric", month: "long" }) : "Laster…"}</div>
+        </div>
+        <div className="meta">
+          <div className="meta-line"><span className="pulse"></span> {homeyName || "Synkronisert"}</div>
+          <div>{devices.length} enheter · {flows.length} flows</div>
+        </div>
+        <div className="actions">
+          <button className={`icon-btn ${loading ? "spinning" : ""}`} onClick={load} disabled={loading} title="Oppdater">↻</button>
+          <button className="icon-btn" onClick={handleLogout} title="Logg ut">✕</button>
+        </div>
+      </header>
+
+      <nav className="tabs">
+        {tabs.map(t => (
+          <button key={t.key} className={`tab ${tab === t.key ? "active" : ""}`} onClick={() => setTab(t.key)}>
+            {t.icon && <em>{t.icon}</em>}{t.label}
+          </button>
+        ))}
+      </nav>
+
+      {error && <div className="error-banner">{error}</div>}
+
+      {tab === "hjem" && (
+        <HomeView
+          devices={devices} flows={flows} zones={zones} tree={tree} devicesByZone={devicesByZone}
+          prefs={prefs} globalPrefs={globalPrefs} onUpdateGlobalPrefs={handleUpdateGlobalPrefs}
+          onSetCapability={handleSetCapability} onToggle={handleToggle}
+          onUpdatePrefs={handleUpdatePrefs} onRunFlow={handleRunFlow}
+        />
+      )}
+      {tab === "styring" && (
+        <StyringView floors={floors} devicesByZone={devicesByZone}
+          onToggle={handleToggle} onSetCapability={handleSetCapability}
+          prefs={prefs} onUpdatePrefs={handleUpdatePrefs} />
+      )}
+      {tab === "sikkerhet" && (
+        <SecurityView devices={devices} zones={zones} events={events}
+          onToggle={handleToggle} onSetCapability={handleSetCapability}
+          prefs={prefs} onUpdatePrefs={handleUpdatePrefs} />
+      )}
+      {tab === "alle" && (
+        <div className="single-view">
+          <div className="grid-wide">
+            {devices.map(d => (
+              <DeviceCard key={d.id} device={d} onToggle={handleToggle}
+                onSetCapability={handleSetCapability} prefs={prefs} onUpdatePrefs={handleUpdatePrefs} />
+            ))}
+          </div>
+        </div>
+      )}
+      {tab === "flows" && (
+        <div className="single-view">
+          <div className="flow-list">
+            {flows.length === 0 && <div className="empty">Ingen flows funnet</div>}
+            {flows.map(f => <FlowRow key={f.id} flow={f} onRun={handleRunFlow} />)}
+          </div>
+        </div>
+      )}
+
+      <footer className="colophon">
+        Et hjem som <em>oppfører seg vakkert</em>
+      </footer>
+    </>
+  );
+}
+
+function App() {
+  const [auth, setAuth] = useState(null);
+  const [error, setError] = useState("");
+
+  const checkAuth = useCallback(async () => {
+    try {
+      const data = await api("/auth/status");
+      setAuth(data);
+    } catch (e) {
+      setError(e.message);
+      setAuth({ authenticated: false });
+    }
+  }, []);
+
+  useEffect(() => { checkAuth(); }, [checkAuth]);
+
+  if (auth === null) return <div className="setup"><div className="setup-card">Laster…</div></div>;
+  if (!auth.authenticated) return <SetupScreen error={error} />;
+  return (
+    <div className="frame">
+      <Dashboard homeyName={auth.homeyName} onLogout={() => setAuth({ authenticated: false })} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
