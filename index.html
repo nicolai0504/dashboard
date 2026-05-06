@@ -370,6 +370,10 @@
   .config-cap-label input { accent-color: var(--moss); width: 10px; height: 10px; cursor: pointer; }
   .config-cap-label.active { border-color: var(--moss); background: rgba(45,64,48,0.07); }
   .config-hint { font-size: 9px; color: var(--ink-mute); text-align: center; padding: 16px 0 8px; letter-spacing: 0.1em; }
+  .config-tabs { display: flex; border-bottom: 1px solid var(--line); padding: 0 22px; flex-shrink: 0; }
+  .config-tab-btn { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 8px 14px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); cursor: pointer; margin-bottom: -1px; transition: color .2s; }
+  .config-tab-btn:hover { color: var(--ink); }
+  .config-tab-btn.active { color: var(--ink); border-bottom-color: var(--terracotta); }
 
   /* ====== SIKKERHET ====== */
   .security-status {
@@ -1349,10 +1353,42 @@ function ConfigDevice({ device, hidden, prefs, expanded, onToggleVisible, onTogg
   );
 }
 
-function StyringConfig({ floors, devicesByZone, prefs, onUpdatePrefs, onUpdateStyringPrefs, onClose }) {
+function allZonesWithDevices(floors, devicesByZone) {
+  const result = [];
+  const visit = (zone) => {
+    if ((devicesByZone[zone.id] || []).length > 0) result.push(zone);
+    (zone.children || []).forEach(visit);
+  };
+  floors.forEach(visit);
+  return result;
+}
+
+function ZoneColumn({ zone, devices, onToggle, onSetCapability, prefs, onUpdatePrefs }) {
+  return (
+    <div className="col">
+      <div className="col-head">
+        <h2 className="col-title">{zone.name}</h2>
+        <div className="col-subtitle">{devices.length} enhet{devices.length !== 1 ? "er" : ""}</div>
+      </div>
+      <DeviceGroups devices={devices} onToggle={onToggle} onSetCapability={onSetCapability}
+        prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+    </div>
+  );
+}
+
+function StyringConfig({ floors, devicesByZone, allZones, prefs, onUpdatePrefs, onUpdateStyringPrefs, onClose }) {
   const styringPrefs = prefs._styring || {};
   const hiddenDevices = styringPrefs.hiddenDevices || [];
+  const hiddenZones = styringPrefs.hiddenZones || [];
+  const [activeTab, setActiveTab] = useState("zones");
   const [expandedMetrics, setExpandedMetrics] = useState({});
+
+  const toggleZone = (zoneId) => {
+    const next = hiddenZones.includes(zoneId)
+      ? hiddenZones.filter(id => id !== zoneId)
+      : [...hiddenZones, zoneId];
+    onUpdateStyringPrefs({ ...styringPrefs, hiddenZones: next });
+  };
 
   const toggleDevice = (deviceId) => {
     const next = hiddenDevices.includes(deviceId)
@@ -1369,18 +1405,6 @@ function StyringConfig({ floors, devicesByZone, prefs, onUpdatePrefs, onUpdateSt
     onUpdatePrefs(deviceId, { ...devicePrefs, metrics: next });
   };
 
-  const toggleExpandMetrics = (deviceId) => {
-    setExpandedMetrics(prev => ({ ...prev, [deviceId]: !prev[deviceId] }));
-  };
-
-  const floorData = floors.map(floor => ({
-    floor,
-    directDevices: devicesByZone[floor.id] || [],
-    zones: (floor.children || [])
-      .map(zone => ({ zone, devices: devicesInZoneTree(zone, devicesByZone) }))
-      .filter(z => z.devices.length > 0),
-  }));
-
   return (
     <div className="config-overlay" onClick={onClose}>
       <div className="config-panel" onClick={e => e.stopPropagation()}>
@@ -1388,33 +1412,41 @@ function StyringConfig({ floors, devicesByZone, prefs, onUpdatePrefs, onUpdateSt
           <div className="config-title">Tilpass <em>Styring</em></div>
           <button className="config-close" onClick={onClose}>Lukk</button>
         </div>
+        <div className="config-tabs">
+          <button className={`config-tab-btn ${activeTab === "zones" ? "active" : ""}`} onClick={() => setActiveTab("zones")}>Soner</button>
+          <button className={`config-tab-btn ${activeTab === "devices" ? "active" : ""}`} onClick={() => setActiveTab("devices")}>Enheter</button>
+        </div>
         <div className="config-body">
-          {floorData.map(({ floor, directDevices, zones }) => (
-            <div key={floor.id} className="config-floor">
-              <div className="config-floor-title">{floor.name}</div>
-              {directDevices.map(device => (
-                <ConfigDevice key={device.id} device={device}
-                  hidden={hiddenDevices.includes(device.id)}
-                  prefs={prefs} expanded={!!expandedMetrics[device.id]}
-                  onToggleVisible={() => toggleDevice(device.id)}
-                  onToggleMetrics={() => toggleExpandMetrics(device.id)}
-                  onToggleMetric={(capName, allCaps, cur) => toggleMetric(device.id, capName, allCaps, cur)} />
-              ))}
-              {zones.map(({ zone, devices }) => (
-                <div key={zone.id}>
-                  <div className="config-zone-title">{zone.name}</div>
-                  {devices.map(device => (
-                    <ConfigDevice key={device.id} device={device}
-                      hidden={hiddenDevices.includes(device.id)}
-                      prefs={prefs} expanded={!!expandedMetrics[device.id]}
-                      onToggleVisible={() => toggleDevice(device.id)}
-                      onToggleMetrics={() => toggleExpandMetrics(device.id)}
-                      onToggleMetric={(capName, allCaps, cur) => toggleMetric(device.id, capName, allCaps, cur)} />
-                  ))}
+          {activeTab === "zones" && allZones.map(zone => (
+            <div key={zone.id} className="config-device">
+              <div className="config-device-row">
+                <input type="checkbox" className="config-device-check"
+                  checked={!hiddenZones.includes(zone.id)}
+                  onChange={() => toggleZone(zone.id)} />
+                <div className="config-device-info">
+                  <div className="config-device-name">{zone.name}</div>
+                  <div className="config-device-label">{(devicesByZone[zone.id] || []).length} enheter</div>
                 </div>
-              ))}
+              </div>
             </div>
           ))}
+          {activeTab === "devices" && allZones.map(zone => {
+            const devices = devicesByZone[zone.id] || [];
+            if (devices.length === 0) return null;
+            return (
+              <div key={zone.id} className="config-floor">
+                <div className="config-floor-title">{zone.name}</div>
+                {devices.map(device => (
+                  <ConfigDevice key={device.id} device={device}
+                    hidden={hiddenDevices.includes(device.id)}
+                    prefs={prefs} expanded={!!expandedMetrics[device.id]}
+                    onToggleVisible={() => toggleDevice(device.id)}
+                    onToggleMetrics={() => setExpandedMetrics(prev => ({ ...prev, [device.id]: !prev[device.id] }))}
+                    onToggleMetric={(capName, allCaps, cur) => toggleMetric(device.id, capName, allCaps, cur)} />
+                ))}
+              </div>
+            );
+          })}
           <div className="config-hint">Innstillinger lagres automatisk</div>
         </div>
       </div>
@@ -1422,11 +1454,12 @@ function StyringConfig({ floors, devicesByZone, prefs, onUpdatePrefs, onUpdateSt
   );
 }
 
-// ==================== STYRING (FLOORS) VIEW ====================
+// ==================== STYRING VIEW ====================
 function StyringView({ floors, devicesByZone, onToggle, onSetCapability, prefs, onUpdatePrefs, onUpdateStyringPrefs }) {
   const [showConfig, setShowConfig] = useState(false);
   const styringPrefs = prefs._styring || {};
   const hiddenDevices = styringPrefs.hiddenDevices || [];
+  const hiddenZones = styringPrefs.hiddenZones || [];
 
   const filteredDevicesByZone = useMemo(() => {
     if (hiddenDevices.length === 0) return devicesByZone;
@@ -1437,8 +1470,9 @@ function StyringView({ floors, devicesByZone, onToggle, onSetCapability, prefs, 
     return result;
   }, [devicesByZone, hiddenDevices]);
 
-  const visibleFloors = floors.filter(z => devicesInZoneTree(z, filteredDevicesByZone).length > 0);
-  const colTemplate = visibleFloors.length === 0 ? "1fr" : visibleFloors.map(() => "1fr").join(" ");
+  const allZones = useMemo(() => allZonesWithDevices(floors, filteredDevicesByZone), [floors, filteredDevicesByZone]);
+  const visibleZones = allZones.filter(z => !hiddenZones.includes(z.id));
+  const colTemplate = visibleZones.length === 0 ? "1fr" : `repeat(${visibleZones.length}, minmax(0, 1fr))`;
 
   return (
     <>
@@ -1448,15 +1482,18 @@ function StyringView({ floors, devicesByZone, onToggle, onSetCapability, prefs, 
         </button>
       </div>
       <main className="columns" style={{ gridTemplateColumns: colTemplate }}>
-        {visibleFloors.map((floor, idx) => (
-          <FloorColumn key={floor.id} floor={floor} idx={idx} devicesByZone={filteredDevicesByZone}
-            onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+        {visibleZones.map(zone => (
+          <ZoneColumn key={zone.id} zone={zone}
+            devices={filteredDevicesByZone[zone.id] || []}
+            onToggle={onToggle} onSetCapability={onSetCapability}
+            prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
         ))}
-        {visibleFloors.length === 0 && <div className="empty">Ingen enheter å vise · åpne "Tilpass visning" for å legge til</div>}
+        {visibleZones.length === 0 && <div className="empty">Ingen soner å vise · åpne "Tilpass visning" for å legge til</div>}
       </main>
       {showConfig && (
         <StyringConfig
           floors={floors} devicesByZone={devicesByZone}
+          allZones={allZonesWithDevices(floors, devicesByZone)}
           prefs={prefs} onUpdatePrefs={onUpdatePrefs}
           onUpdateStyringPrefs={onUpdateStyringPrefs}
           onClose={() => setShowConfig(false)} />
