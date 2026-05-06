@@ -438,6 +438,7 @@
   .run-btn.done { background: var(--moss); }
 
   .single-view { padding-top: 14px; flex: 1; min-height: 0; overflow-y: auto; }
+  .tab-content { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
 
   @media (max-width: 1100px) {
     .home-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1826,49 +1827,47 @@ function Dashboard({ homeyName, onLogout }) {
         ))}
       </nav>
 
-      {error && <div className="error-banner">{error}</div>}
+      <div className="tab-content">
+        {error && <div className="error-banner">{error}</div>}
 
-      {tab === "hjem" && (
-        <HomeView
-          devices={devices} flows={flows} zones={zones} tree={tree} devicesByZone={devicesByZone}
-          prefs={prefs} globalPrefs={globalPrefs} onUpdateGlobalPrefs={handleUpdateGlobalPrefs}
-          onSetCapability={handleSetCapability} onToggle={handleToggle}
-          onUpdatePrefs={handleUpdatePrefs} onRunFlow={handleRunFlow}
-        />
-      )}
-      {tab === "styring" && (
-        <StyringView floors={floors} devicesByZone={devicesByZone}
-          onToggle={handleToggle} onSetCapability={handleSetCapability}
-          prefs={prefs} onUpdatePrefs={handleUpdatePrefs}
-          onUpdateStyringPrefs={handleUpdateStyringPrefs} />
-      )}
-      {tab === "sikkerhet" && (
-        <SecurityView devices={devices} zones={zones} events={events}
-          onToggle={handleToggle} onSetCapability={handleSetCapability}
-          prefs={prefs} onUpdatePrefs={handleUpdatePrefs} />
-      )}
-      {tab === "alle" && (
-        <div className="single-view">
-          <div className="grid-wide">
-            {devices.map(d => (
-              <DeviceCard key={d.id} device={d} onToggle={handleToggle}
-                onSetCapability={handleSetCapability} prefs={prefs} onUpdatePrefs={handleUpdatePrefs} />
-            ))}
+        {tab === "hjem" && (
+          <HomeView
+            devices={devices} flows={flows} zones={zones} tree={tree} devicesByZone={devicesByZone}
+            prefs={prefs} globalPrefs={globalPrefs} onUpdateGlobalPrefs={handleUpdateGlobalPrefs}
+            onSetCapability={handleSetCapability} onToggle={handleToggle}
+            onUpdatePrefs={handleUpdatePrefs} onRunFlow={handleRunFlow}
+          />
+        )}
+        {tab === "styring" && (
+          <StyringView floors={floors} devicesByZone={devicesByZone}
+            onToggle={handleToggle} onSetCapability={handleSetCapability}
+            prefs={prefs} onUpdatePrefs={handleUpdatePrefs}
+            onUpdateStyringPrefs={handleUpdateStyringPrefs} />
+        )}
+        {tab === "sikkerhet" && (
+          <SecurityView devices={devices} zones={zones} events={events}
+            onToggle={handleToggle} onSetCapability={handleSetCapability}
+            prefs={prefs} onUpdatePrefs={handleUpdatePrefs} />
+        )}
+        {tab === "alle" && (
+          <div className="single-view">
+            <div className="grid-wide">
+              {devices.map(d => (
+                <DeviceCard key={d.id} device={d} onToggle={handleToggle}
+                  onSetCapability={handleSetCapability} prefs={prefs} onUpdatePrefs={handleUpdatePrefs} />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-      {tab === "flows" && (
-        <div className="single-view">
-          <div className="flow-list">
-            {flows.length === 0 && <div className="empty">Ingen flows funnet</div>}
-            {flows.map(f => <FlowRow key={f.id} flow={f} onRun={handleRunFlow} />)}
+        )}
+        {tab === "flows" && (
+          <div className="single-view">
+            <div className="flow-list">
+              {flows.length === 0 && <div className="empty">Ingen flows funnet</div>}
+              {flows.map(f => <FlowRow key={f.id} flow={f} onRun={handleRunFlow} />)}
+            </div>
           </div>
-        </div>
-      )}
-
-      <footer className="colophon">
-        Et hjem som <em>oppfører seg vakkert</em>
-      </footer>
+        )}
+      </div>
     </>
   );
 }
