@@ -336,6 +336,37 @@
   .settings { background: rgba(26, 24, 20, 0.04); border-left: 2px solid var(--terracotta); padding: 10px; margin-top: 4px; cursor: default; animation: slideDown .15s ease-out; }
   @keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
+  /* ====== STYRING TILPASS ====== */
+  .styring-toolbar { display: flex; align-items: center; justify-content: flex-end; padding: 10px 0 4px; }
+  .tilpass-btn { background: transparent; border: 1px solid var(--ink-mute); color: var(--ink-mute); padding: 4px 10px; font-family: var(--font-body); font-size: 8px; text-transform: uppercase; letter-spacing: 0.2em; cursor: pointer; transition: all .2s; }
+  .tilpass-btn:hover, .tilpass-btn.active { border-color: var(--ink); color: var(--ink); background: var(--paper-deep); }
+  .config-overlay { position: fixed; inset: 0; background: rgba(26,24,20,0.5); z-index: 200; display: flex; align-items: flex-start; justify-content: flex-end; }
+  .config-panel { width: min(420px, 95vw); height: 100dvh; background: var(--paper); overflow-y: auto; box-shadow: -4px 0 24px rgba(0,0,0,0.16); display: flex; flex-direction: column; }
+  .config-head { padding: 20px 22px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--paper); z-index: 1; }
+  .config-title { font-family: var(--font-display); font-weight: 400; font-size: 20px; letter-spacing: -0.02em; }
+  .config-title em { font-style: italic; color: var(--terracotta); }
+  .config-close { background: transparent; border: 1px solid var(--line); color: var(--ink); padding: 4px 10px; font-size: 10px; cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase; }
+  .config-close:hover { background: var(--paper-deep); }
+  .config-body { padding: 16px 22px; flex: 1; }
+  .config-floor { margin-bottom: 24px; }
+  .config-floor-title { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 15px; letter-spacing: -0.01em; margin-bottom: 8px; color: var(--terracotta); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  .config-zone-title { font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-mute); margin: 10px 0 5px; }
+  .config-device { display: flex; flex-direction: column; border-left: 2px solid var(--line-soft); padding: 5px 10px; margin-bottom: 3px; transition: border-color .15s; }
+  .config-device:hover { border-color: var(--terracotta); }
+  .config-device-row { display: flex; align-items: center; gap: 8px; }
+  .config-device-check { width: 13px; height: 13px; accent-color: var(--moss); cursor: pointer; flex-shrink: 0; }
+  .config-device-info { flex: 1; }
+  .config-device-name { font-size: 12px; font-family: var(--font-display); line-height: 1.2; }
+  .config-device-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-mute); }
+  .config-metrics-toggle { background: none; border: none; color: var(--ink-mute); font-size: 8px; text-transform: uppercase; letter-spacing: 0.15em; cursor: pointer; padding: 2px 0; flex-shrink: 0; }
+  .config-metrics-toggle:hover { color: var(--ink); }
+  .config-caps { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line-soft); }
+  .config-cap-label { display: flex; align-items: center; gap: 3px; font-size: 8px; text-transform: uppercase; letter-spacing: 0.15em; cursor: pointer; padding: 2px 7px; border: 1px solid var(--line); transition: all .15s; user-select: none; }
+  .config-cap-label:hover { border-color: var(--ink-mute); }
+  .config-cap-label input { accent-color: var(--moss); width: 10px; height: 10px; cursor: pointer; }
+  .config-cap-label.active { border-color: var(--moss); background: rgba(45,64,48,0.07); }
+  .config-hint { font-size: 9px; color: var(--ink-mute); text-align: center; padding: 16px 0 8px; letter-spacing: 0.1em; }
+
   /* ====== SIKKERHET ====== */
   .security-status {
     padding: 18px 22px;
@@ -1236,17 +1267,159 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
   );
 }
 
-// ==================== STYRING (FLOORS) VIEW ====================
-function StyringView({ floors, devicesByZone, onToggle, onSetCapability, prefs, onUpdatePrefs }) {
-  const colTemplate = floors.length === 0 ? "1fr" : floors.map(() => "1fr").join(" ");
+// ==================== STYRING CONFIG PANEL ====================
+function ConfigDevice({ device, hidden, prefs, expanded, onToggleVisible, onToggleMetrics, onToggleMetric }) {
+  const cap = device.capabilities || [];
+  const allMetricCaps = cap.filter(c => METRIC_DEFS[c]);
+  const devicePrefs = prefs[device.id] || {};
+  const currentMetrics = devicePrefs.metrics || allMetricCaps;
+
   return (
-    <main className="columns" style={{ gridTemplateColumns: colTemplate }}>
-      {floors.map((floor, idx) => (
-        <FloorColumn key={floor.id} floor={floor} idx={idx} devicesByZone={devicesByZone}
-          onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
-      ))}
-      {floors.length === 0 && <div className="empty">Ingen soner med enheter funnet</div>}
-    </main>
+    <div className="config-device">
+      <div className="config-device-row">
+        <input type="checkbox" className="config-device-check" checked={!hidden} onChange={onToggleVisible} />
+        <div className="config-device-info">
+          <div className="config-device-name">{device.name}</div>
+          <div className="config-device-label">{deviceLabel(device, device.capabilitiesObj || {})}</div>
+        </div>
+        {allMetricCaps.length > 0 && !hidden && (
+          <button className="config-metrics-toggle" onClick={onToggleMetrics}>
+            {expanded ? "Skjul ▲" : "Målinger ▼"}
+          </button>
+        )}
+      </div>
+      {expanded && !hidden && allMetricCaps.length > 0 && (
+        <div className="config-caps">
+          {allMetricCaps.map(capName => {
+            const def = METRIC_DEFS[capName];
+            const active = currentMetrics.includes(capName);
+            return (
+              <label key={capName} className={`config-cap-label ${active ? "active" : ""}`}>
+                <input type="checkbox" checked={active}
+                  onChange={() => onToggleMetric(capName, allMetricCaps, currentMetrics)} />
+                {def.label}
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StyringConfig({ floors, devicesByZone, prefs, onUpdatePrefs, onUpdateStyringPrefs, onClose }) {
+  const styringPrefs = prefs._styring || {};
+  const hiddenDevices = styringPrefs.hiddenDevices || [];
+  const [expandedMetrics, setExpandedMetrics] = useState({});
+
+  const toggleDevice = (deviceId) => {
+    const next = hiddenDevices.includes(deviceId)
+      ? hiddenDevices.filter(id => id !== deviceId)
+      : [...hiddenDevices, deviceId];
+    onUpdateStyringPrefs({ ...styringPrefs, hiddenDevices: next });
+  };
+
+  const toggleMetric = (deviceId, capName, allMetricCaps, currentMetrics) => {
+    const next = currentMetrics.includes(capName)
+      ? currentMetrics.filter(c => c !== capName)
+      : [...currentMetrics, capName];
+    const devicePrefs = prefs[deviceId] || {};
+    onUpdatePrefs(deviceId, { ...devicePrefs, metrics: next });
+  };
+
+  const toggleExpandMetrics = (deviceId) => {
+    setExpandedMetrics(prev => ({ ...prev, [deviceId]: !prev[deviceId] }));
+  };
+
+  const floorData = floors.map(floor => ({
+    floor,
+    directDevices: devicesByZone[floor.id] || [],
+    zones: (floor.children || [])
+      .map(zone => ({ zone, devices: devicesInZoneTree(zone, devicesByZone) }))
+      .filter(z => z.devices.length > 0),
+  }));
+
+  return (
+    <div className="config-overlay" onClick={onClose}>
+      <div className="config-panel" onClick={e => e.stopPropagation()}>
+        <div className="config-head">
+          <div className="config-title">Tilpass <em>Styring</em></div>
+          <button className="config-close" onClick={onClose}>Lukk</button>
+        </div>
+        <div className="config-body">
+          {floorData.map(({ floor, directDevices, zones }) => (
+            <div key={floor.id} className="config-floor">
+              <div className="config-floor-title">{floor.name}</div>
+              {directDevices.map(device => (
+                <ConfigDevice key={device.id} device={device}
+                  hidden={hiddenDevices.includes(device.id)}
+                  prefs={prefs} expanded={!!expandedMetrics[device.id]}
+                  onToggleVisible={() => toggleDevice(device.id)}
+                  onToggleMetrics={() => toggleExpandMetrics(device.id)}
+                  onToggleMetric={(capName, allCaps, cur) => toggleMetric(device.id, capName, allCaps, cur)} />
+              ))}
+              {zones.map(({ zone, devices }) => (
+                <div key={zone.id}>
+                  <div className="config-zone-title">{zone.name}</div>
+                  {devices.map(device => (
+                    <ConfigDevice key={device.id} device={device}
+                      hidden={hiddenDevices.includes(device.id)}
+                      prefs={prefs} expanded={!!expandedMetrics[device.id]}
+                      onToggleVisible={() => toggleDevice(device.id)}
+                      onToggleMetrics={() => toggleExpandMetrics(device.id)}
+                      onToggleMetric={(capName, allCaps, cur) => toggleMetric(device.id, capName, allCaps, cur)} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          ))}
+          <div className="config-hint">Innstillinger lagres automatisk</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== STYRING (FLOORS) VIEW ====================
+function StyringView({ floors, devicesByZone, onToggle, onSetCapability, prefs, onUpdatePrefs, onUpdateStyringPrefs }) {
+  const [showConfig, setShowConfig] = useState(false);
+  const styringPrefs = prefs._styring || {};
+  const hiddenDevices = styringPrefs.hiddenDevices || [];
+
+  const filteredDevicesByZone = useMemo(() => {
+    if (hiddenDevices.length === 0) return devicesByZone;
+    const result = {};
+    Object.entries(devicesByZone).forEach(([zoneId, devs]) => {
+      result[zoneId] = devs.filter(d => !hiddenDevices.includes(d.id));
+    });
+    return result;
+  }, [devicesByZone, hiddenDevices]);
+
+  const visibleFloors = floors.filter(z => devicesInZoneTree(z, filteredDevicesByZone).length > 0);
+  const colTemplate = visibleFloors.length === 0 ? "1fr" : visibleFloors.map(() => "1fr").join(" ");
+
+  return (
+    <>
+      <div className="styring-toolbar">
+        <button className={`tilpass-btn ${showConfig ? "active" : ""}`} onClick={() => setShowConfig(v => !v)}>
+          Tilpass visning
+        </button>
+      </div>
+      <main className="columns" style={{ gridTemplateColumns: colTemplate }}>
+        {visibleFloors.map((floor, idx) => (
+          <FloorColumn key={floor.id} floor={floor} idx={idx} devicesByZone={filteredDevicesByZone}
+            onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+        ))}
+        {visibleFloors.length === 0 && <div className="empty">Ingen enheter å vise · åpne "Tilpass visning" for å legge til</div>}
+      </main>
+      {showConfig && (
+        <StyringConfig
+          floors={floors} devicesByZone={devicesByZone}
+          prefs={prefs} onUpdatePrefs={onUpdatePrefs}
+          onUpdateStyringPrefs={onUpdateStyringPrefs}
+          onClose={() => setShowConfig(false)} />
+      )}
+    </>
   );
 }
 
@@ -1484,6 +1657,13 @@ function Dashboard({ homeyName, onLogout }) {
     catch (e) { console.error("Kunne ikke lagre prefs:", e); }
   };
 
+  const handleUpdateStyringPrefs = async (styringPrefs) => {
+    const newPrefs = { ...prefs, _styring: styringPrefs };
+    setPrefs(newPrefs);
+    try { await api("/prefs", { method: "PUT", body: JSON.stringify(newPrefs) }); }
+    catch (e) { console.error("Kunne ikke lagre styring-prefs:", e); }
+  };
+
   const handleRunFlow = async (id) => {
     await api(`/homey/manager/flow/flow/${id}/trigger`, { method: "PUT", body: "{}" });
   };
@@ -1552,7 +1732,8 @@ function Dashboard({ homeyName, onLogout }) {
       {tab === "styring" && (
         <StyringView floors={floors} devicesByZone={devicesByZone}
           onToggle={handleToggle} onSetCapability={handleSetCapability}
-          prefs={prefs} onUpdatePrefs={handleUpdatePrefs} />
+          prefs={prefs} onUpdatePrefs={handleUpdatePrefs}
+          onUpdateStyringPrefs={handleUpdateStyringPrefs} />
       )}
       {tab === "sikkerhet" && (
         <SecurityView devices={devices} zones={zones} events={events}
