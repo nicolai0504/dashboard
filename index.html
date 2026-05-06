@@ -1470,9 +1470,18 @@ function StyringView({ floors, devicesByZone, onToggle, onSetCapability, prefs, 
     return result;
   }, [devicesByZone, hiddenDevices]);
 
-  const allZones = useMemo(() => allZonesWithDevices(floors, filteredDevicesByZone), [floors, filteredDevicesByZone]);
-  const visibleZones = allZones.filter(z => !hiddenZones.includes(z.id));
-  const colTemplate = visibleZones.length === 0 ? "1fr" : `repeat(${visibleZones.length}, minmax(0, 1fr))`;
+  // Remove hidden zones from the tree before passing to FloorColumn
+  const filteredFloors = useMemo(() => {
+    const filterTree = (zone) => {
+      if (hiddenZones.includes(zone.id)) return null;
+      const children = (zone.children || []).map(filterTree).filter(Boolean);
+      return { ...zone, children };
+    };
+    return floors.map(filterTree).filter(Boolean);
+  }, [floors, hiddenZones]);
+
+  const visibleFloors = filteredFloors.filter(z => devicesInZoneTree(z, filteredDevicesByZone).length > 0);
+  const colTemplate = visibleFloors.length === 0 ? "1fr" : visibleFloors.map(() => "1fr").join(" ");
 
   return (
     <>
@@ -1482,13 +1491,11 @@ function StyringView({ floors, devicesByZone, onToggle, onSetCapability, prefs, 
         </button>
       </div>
       <main className="columns" style={{ gridTemplateColumns: colTemplate }}>
-        {visibleZones.map(zone => (
-          <ZoneColumn key={zone.id} zone={zone}
-            devices={filteredDevicesByZone[zone.id] || []}
-            onToggle={onToggle} onSetCapability={onSetCapability}
-            prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+        {visibleFloors.map((floor, idx) => (
+          <FloorColumn key={floor.id} floor={floor} idx={idx} devicesByZone={filteredDevicesByZone}
+            onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
         ))}
-        {visibleZones.length === 0 && <div className="empty">Ingen soner å vise · åpne "Tilpass visning" for å legge til</div>}
+        {visibleFloors.length === 0 && <div className="empty">Ingen soner å vise · åpne "Tilpass visning" for å legge til</div>}
       </main>
       {showConfig && (
         <StyringConfig
