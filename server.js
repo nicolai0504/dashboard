@@ -238,6 +238,48 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true });
     }
 
+    // Sanntidsavganger fra Entur
+    if (p === "/transit/departures") {
+      const query = `{
+        kragsvei: quay(id: "NSR:Quay:11584") {
+          estimatedCalls(timeRange: 7200, numberOfDepartures: 2) {
+            expectedDepartureTime realtime
+            destinationDisplay { frontText }
+            serviceJourney { line { publicCode transportMode } }
+          }
+        }
+        amager: quay(id: "NSR:Quay:11676") {
+          estimatedCalls(timeRange: 7200, numberOfDepartures: 2) {
+            expectedDepartureTime realtime
+            destinationDisplay { frontText }
+            serviceJourney { line { publicCode transportMode } }
+          }
+        }
+        holmenOsteraas: quay(id: "NSR:Quay:11669") {
+          estimatedCalls(timeRange: 7200, numberOfDepartures: 2) {
+            expectedDepartureTime realtime
+            destinationDisplay { frontText }
+            serviceJourney { line { publicCode transportMode } }
+          }
+        }
+        holmenElling: quay(id: "NSR:Quay:11670") {
+          estimatedCalls(timeRange: 7200, numberOfDepartures: 2) {
+            expectedDepartureTime realtime
+            destinationDisplay { frontText }
+            serviceJourney { line { publicCode transportMode } }
+          }
+        }
+      }`;
+      const r = await fetch("https://api.entur.io/journey-planner/v3/graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "ET-Client-Name": "homey-dashboard-nicolai" },
+        body: JSON.stringify({ query }),
+      });
+      if (!r.ok) throw new Error(`Entur API feilet: ${r.status}`);
+      const json = await r.json();
+      return send(res, 200, json.data || {});
+    }
+
     // Proxy til Homey API
     if (p.startsWith("/homey/")) {
       if (!state.tokens) return send(res, 401, { error: "Ikke autentisert" });
