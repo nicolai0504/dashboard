@@ -100,7 +100,7 @@
   .pill-btn.terracotta { background: var(--terracotta); color: var(--paper); border-color: var(--terracotta); }
   .pill-btn.terracotta:hover { background: var(--ink); border-color: var(--ink); }
 
-  .home-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding-bottom: 14px; flex: 1; min-height: 0; overflow-y: auto; align-items: start; }
+  .home-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: masonry; gap: 14px; padding-bottom: 14px; flex: 1; min-height: 0; overflow-y: auto; }
   .module {
     background: var(--paper);
     border: 1px solid var(--line);
@@ -235,6 +235,11 @@
   .sparkline { width: 100%; height: 36px; margin-top: 8px; }
   .sparkline path { fill: none; stroke: var(--terracotta); stroke-width: 1.2; }
   .sparkline .area { fill: var(--terracotta); opacity: 0.08; stroke: none; }
+
+  /* Combined HAN+Weather module */
+  .han-weather-split { display: flex; gap: 0; margin-top: 4px; }
+  .han-weather-half { flex: 1; }
+  .han-weather-half + .han-weather-half { border-left: 1px solid var(--line-soft); padding-left: 14px; }
 
   /* Weather module */
   .weather-main { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
@@ -858,6 +863,7 @@ function FloorColumn({ floor, idx, devicesByZone, onToggle, onSetCapability, pre
 // ==================== HOME MODULES ====================
 
 const MODULE_TYPES = {
+  hanweather: { title: "Strøm & Ute", desc: "Strømmåler og utetemperatur i ett", defaultSpan: 1 },
   han: { title: "HAN-måler", desc: "Live effekt og forbruk", defaultSpan: 1 },
   weather: { title: "Værmodul", desc: "Utetemperatur og forhold", defaultSpan: 1 },
   transit: { title: "Avganger", desc: "Sanntidsavganger fra Ruter", defaultSpan: 1 },
@@ -949,6 +955,60 @@ function WeatherModuleSettings({ devices, globalPrefs, onUpdate }) {
         <option value="">— Auto-detekter —</option>
         {candidates.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
       </select>
+    </div>
+  );
+}
+
+function HanWeatherModule({ devices, zones, globalPrefs }) {
+  const han = useMemo(() => findHanMeter(devices, globalPrefs.hanMeterId), [devices, globalPrefs.hanMeterId]);
+  const sensor = useMemo(() => findOutdoorSensor(devices, zones, globalPrefs.outdoorSensorId), [devices, zones, globalPrefs.outdoorSensorId]);
+  const power = han?.capabilitiesObj?.measure_power?.value;
+  const kw = power != null ? power / 1000 : null;
+  const temp = sensor?.capabilitiesObj?.measure_temperature?.value;
+
+  return (
+    <>
+      <div className="module-head">
+        <div className="module-title">Live</div>
+        <span className="module-sub" style={{ background: "var(--terracotta)", color: "var(--paper)", padding: "2px 6px", letterSpacing: "0.2em" }}>Nå</span>
+      </div>
+      <div className="han-weather-split">
+        <div className="han-weather-half">
+          <div className="han-value" style={{ fontSize: 28 }}>
+            {power == null ? <>–<span className="unit"> W</span></>
+              : kw >= 1 ? (() => { const { intPart, decPart } = formatDecimal(kw, 2); return <>{intPart}<em>,{decPart}</em><span className="unit"> kW</span></>; })()
+              : <>{Math.round(power)}<span className="unit"> W</span></>}
+          </div>
+          <div className="han-detail">Strøm nå</div>
+        </div>
+        <div className="han-weather-half">
+          <div className="weather-temp" style={{ fontSize: 28 }}>
+            {temp != null ? <>{Number(temp).toFixed(1).replace('.', ',')}<em>°</em></> : <>–<em>°</em></>}
+          </div>
+          <div className="han-detail">{sensor ? "Ute" : "Ingen sensor"}</div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function HanWeatherModuleSettings({ devices, zones, globalPrefs, onUpdate }) {
+  const powerCandidates = devices.filter(d => d.capabilitiesObj?.measure_power != null);
+  const tempCandidates = devices.filter(d => d.capabilitiesObj?.measure_temperature != null);
+  return (
+    <div className="module-settings-drawer">
+      <div className="settings-title">HAN-måler</div>
+      <select className="settings-select" value={globalPrefs.hanMeterId || ""} onChange={(e) => onUpdate({ ...globalPrefs, hanMeterId: e.target.value || undefined })}>
+        <option value="">— Auto-detekter —</option>
+        {powerCandidates.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+      </select>
+      <div style={{ marginTop: 12 }}>
+        <div className="settings-title">Utesensor</div>
+        <select className="settings-select" value={globalPrefs.outdoorSensorId || ""} onChange={(e) => onUpdate({ ...globalPrefs, outdoorSensorId: e.target.value || undefined })}>
+          <option value="">— Auto-detekter —</option>
+          {tempCandidates.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+      </div>
     </div>
   );
 }
@@ -1210,11 +1270,11 @@ function SceneButton({ flow, onRun }) {
 }
 
 // ==================== MODULE FRAME (drag/drop wrapper) ====================
-function ModuleFrame({ module, idx, isEdit, onMove, onRemove, onToggleSettings, settingsOpen, onDragStart, onDragOver, onDrop, isDragging, isDropTarget, children, settingsContent }) {
+function ModuleFrame({ module, idx, isEdit, onMove, onRemove, onToggleSettings, settingsOpen, onDragStart, onDragOver, onDrop, isDragging, isDropTarget, children }) {
   const span = module.span || MODULE_TYPES[module.type]?.defaultSpan || 1;
   return (
     <div
-      className={`module span-${span} ${isDragging ? "dragging" : ""} ${isDropTarget ? "drop-target" : ""}`}
+      className={`module span-${span} ${isDragging ? "dragging" : ""} ${isDropTarget ? "drop-target" : ""} ${settingsOpen ? "settings-open" : ""}`}
       draggable={isEdit}
       onDragStart={(e) => onDragStart(e, idx)}
       onDragOver={(e) => onDragOver(e, idx)}
@@ -1230,7 +1290,6 @@ function ModuleFrame({ module, idx, isEdit, onMove, onRemove, onToggleSettings, 
         </div>
       )}
       {children}
-      {isEdit && settingsOpen && settingsContent}
     </div>
   );
 }
@@ -1244,8 +1303,7 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
   const [dropTargetIdx, setDropTargetIdx] = useState(null);
 
   const modules = globalPrefs.dashboardModules || [
-    { id: "m1", type: "han" },
-    { id: "m2", type: "weather" },
+    { id: "m1", type: "hanweather" },
     { id: "m3", type: "transit" },
     { id: "m4", type: "flows" },
     { id: "m5", type: "favorites" },
@@ -1307,6 +1365,7 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
 
   const renderModuleContent = (mod) => {
     switch (mod.type) {
+      case "hanweather": return <HanWeatherModule devices={devices} zones={zones} globalPrefs={globalPrefs} />;
       case "han": return <HanModule devices={devices} prefs={prefs} globalPrefs={globalPrefs} />;
       case "weather": return <WeatherModule devices={devices} zones={zones} globalPrefs={globalPrefs} />;
       case "transit": return <TransitModule />;
@@ -1319,11 +1378,12 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
 
   const renderModuleSettings = (mod) => {
     switch (mod.type) {
+      case "hanweather": return <HanWeatherModuleSettings devices={devices} zones={zones} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "han": return <HanModuleSettings devices={devices} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "weather": return <WeatherModuleSettings devices={devices} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "flows": return <FlowsModuleSettings flows={flows} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "favorites": return <FavoritesModuleSettings devices={devices} zones={zones} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
-      case "zones": return <div className="module-settings-drawer"><div className="settings-hint">Denne modulen viser automatisk alle rom med enheter.</div></div>;
+      case "zones": return <div className="settings-hint">Denne modulen viser automatisk alle rom med enheter.</div>;
       default: return null;
     }
   };
@@ -1357,7 +1417,6 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
             onRemove={handleRemove}
             onToggleSettings={handleToggleSettings}
             settingsOpen={settingsForIdx === idx}
-            settingsContent={renderModuleSettings(mod)}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
@@ -1368,6 +1427,20 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
           </ModuleFrame>
         ))}
       </div>
+
+      {settingsForIdx !== null && modules[settingsForIdx] && (
+        <div className="config-overlay" onClick={() => setSettingsForIdx(null)}>
+          <div className="config-panel" onClick={e => e.stopPropagation()}>
+            <div className="config-head">
+              <div className="config-title"><em>{MODULE_TYPES[modules[settingsForIdx].type]?.title}</em> innstillinger</div>
+              <button className="config-close" onClick={() => setSettingsForIdx(null)}>Lukk</button>
+            </div>
+            <div className="config-body">
+              {renderModuleSettings(modules[settingsForIdx])}
+            </div>
+          </div>
+        </div>
+      )}
 
       {pickerOpen && (
         <div className="picker-backdrop" onClick={() => setPickerOpen(false)}>
