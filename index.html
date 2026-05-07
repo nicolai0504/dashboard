@@ -6,44 +6,53 @@
 <title>Hjemmet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,30..100&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,30..100&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #f5f0e6;
-    --paper-deep: #ebe3d3;
-    --ink: #1a1814;
-    --ink-soft: #5c5650;
-    --ink-mute: #8a8378;
-    --moss: #2d4030;
-    --moss-deep: #1a2a1d;
-    --terracotta: #c66b3d;
-    --terracotta-soft: #e8a578;
-    --gold: #b8893f;
-    --red: #a23a2a;
-    --line: rgba(26, 24, 20, 0.12);
-    --line-soft: rgba(26, 24, 20, 0.06);
+    /* Lys & luftig Apple-palett */
+    --bg: #fbf9f4;
+    --surface: #ffffff;
+    --surface-soft: #f7f3ec;
+    --surface-deep: #efeae0;
+    /* Legacy aliases */
+    --paper: #fbf9f4;
+    --paper-deep: #efeae0;
+    --ink: #1d1b18;
+    --ink-soft: #595550;
+    --ink-mute: #a39d92;
+    --moss: #527558;
+    --moss-soft: #7a9b80;
+    --moss-deep: #3d5942;
+    --terracotta: #d28968;
+    --terracotta-soft: #e8b89a;
+    --gold: #c9a268;
+    --red: #c25a4a;
+    --line: rgba(29, 27, 24, 0.06);
+    --line-soft: rgba(29, 27, 24, 0.03);
+    --shadow-sm: 0 1px 2px rgba(29, 27, 24, 0.04), 0 1px 1px rgba(29, 27, 24, 0.02);
+    --shadow-md: 0 4px 16px -4px rgba(29, 27, 24, 0.06), 0 2px 6px -2px rgba(29, 27, 24, 0.04);
+    --shadow-lg: 0 12px 40px -12px rgba(29, 27, 24, 0.1), 0 4px 12px -4px rgba(29, 27, 24, 0.05);
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
 
     --font-display: 'Fraunces', 'Times New Roman', serif;
-    --font-body: 'Inter Tight', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   html, body {
-    background: var(--paper);
+    background: var(--bg);
     color: var(--ink);
     font-family: var(--font-body);
     font-size: 14px;
-    line-height: 1.4;
+    line-height: 1.5;
     height: 100dvh;
     overflow: hidden;
     background-image:
-      radial-gradient(at 15% 0%, rgba(198, 107, 61, 0.04) 0%, transparent 50%),
-      radial-gradient(at 95% 100%, rgba(45, 64, 48, 0.05) 0%, transparent 50%);
-  }
-  body::before {
-    content: ""; position: fixed; inset: 0; pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1, 0 0 0 0 0.09, 0 0 0 0 0.08, 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.5; mix-blend-mode: multiply; z-index: 1;
+      radial-gradient(at 0% 0%, rgba(210, 137, 104, 0.04) 0%, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(82, 117, 88, 0.04) 0%, transparent 50%);
   }
   a { color: var(--terracotta); text-decoration: none; }
   button { font-family: inherit; cursor: pointer; }
@@ -53,66 +62,69 @@
 
   /* SETUP */
   .setup { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .setup-card { background: var(--paper); border: 1px solid var(--line); padding: 48px; max-width: 500px; width: 100%; box-shadow: 0 24px 60px -20px rgba(26, 24, 20, 0.15); }
+  .setup-card { background: var(--surface); border: none; border-radius: var(--radius-lg); padding: 48px; max-width: 500px; width: 100%; box-shadow: var(--shadow-lg); }
   .setup-mark { font-family: var(--font-display); font-weight: 300; font-size: 56px; line-height: 1; letter-spacing: -0.04em; font-variation-settings: 'opsz' 144, 'SOFT' 30; margin-bottom: 4px; }
   .setup-mark em { font-style: italic; font-weight: 400; color: var(--terracotta); }
-  .setup-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); margin-bottom: 28px; }
+  .setup-tag { font-size: 12px; color: var(--ink-mute); font-weight: 500; margin-bottom: 28px; }
   .setup-text { font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin-bottom: 24px; }
   .setup-text em { font-family: var(--font-display); font-style: italic; color: var(--terracotta); }
-  .login-btn { display: block; width: 100%; padding: 14px; text-align: center; background: var(--ink); color: var(--paper); border: none; cursor: pointer; font-family: var(--font-body); font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; transition: background .2s; }
-  .login-btn:hover { background: var(--moss); }
-  .error-box { background: rgba(162, 58, 42, 0.08); color: var(--red); padding: 10px 14px; font-size: 11px; margin-top: 16px; border-left: 2px solid var(--red); }
+  .login-btn { display: block; width: 100%; padding: 14px; text-align: center; background: var(--ink); color: var(--surface); border: none; cursor: pointer; font-family: var(--font-body); font-size: 12px; font-weight: 500; border-radius: var(--radius-sm); transition: background .2s, transform .2s; }
+  .error-box { background: rgba(194, 90, 74, 0.08); color: var(--red); padding: 10px 14px; font-size: 11px; margin-top: 16px; border-radius: var(--radius-sm); border-left: 2px solid var(--red); }
 
   /* MASTHEAD */
-  .masthead { padding: 12px 0 10px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; flex-shrink: 0; }
+  .masthead { padding: 16px 0 12px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; flex-shrink: 0; }
+  .masthead-clock { font-family: var(--font-display); font-weight: 300; font-size: 36px; letter-spacing: -0.045em; line-height: 1; font-variation-settings: 'opsz' 144, 'SOFT' 30; text-align: center; flex: 1; }
+  .masthead-clock em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+  .masthead-right { display: flex; align-items: center; gap: 16px; }
   .brand { display: flex; align-items: baseline; gap: 12px; }
-  .brand-mark { font-family: var(--font-display); font-weight: 300; font-size: 26px; line-height: 1; letter-spacing: -0.03em; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
+  .brand-mark { font-family: var(--font-display); font-weight: 300; font-size: 28px; line-height: 1; letter-spacing: -0.03em; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
   .brand-mark em { font-style: italic; font-weight: 400; color: var(--terracotta); }
-  .brand-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); }
-  .meta { display: flex; align-items: center; gap: 14px; font-size: 10px; color: var(--ink-mute); letter-spacing: 0.08em; flex: 1; justify-content: flex-end; }
+  .brand-tag { font-size: 12px; color: var(--ink-mute); font-weight: 500; }
+  .meta { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--ink-soft); flex: 1; justify-content: flex-end; }
   .meta-line { display: flex; align-items: center; gap: 6px; }
-  .pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--moss); animation: pulse 2s infinite; }
-  @keyframes pulse { 50% { opacity: 0.3; } }
-  .actions { display: flex; gap: 4px; }
-  .icon-btn { width: 26px; height: 26px; border: 1px solid var(--line); background: transparent; border-radius: 50%; cursor: pointer; color: var(--ink-soft); display: inline-flex; align-items: center; justify-content: center; transition: all .2s; font-size: 12px; }
-  .icon-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .icon-btn.active { background: var(--terracotta); color: var(--paper); border-color: var(--terracotta); }
+  .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--moss); box-shadow: 0 0 0 3px rgba(82, 117, 88, 0.15); animation: pulse 2.5s infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(82, 117, 88, 0); } }
+  .actions { display: flex; gap: 8px; }
+  .icon-btn { width: 34px; height: 34px; border: none; background: var(--surface); border-radius: 50%; cursor: pointer; color: var(--ink-soft); display: inline-flex; align-items: center; justify-content: center; transition: all .25s cubic-bezier(.2, .7, .2, 1); font-size: 14px; box-shadow: var(--shadow-sm); }
+  .icon-btn.active { background: var(--terracotta); color: var(--surface); box-shadow: var(--shadow-sm); }
   .icon-btn.spinning { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* TABS */
-  .tabs { display: flex; gap: 0; padding: 6px 0; border-bottom: 1px solid var(--line); overflow-x: auto; flex-shrink: 0; }
-  .tab { background: transparent; border: none; padding: 5px 12px; font-family: var(--font-body); font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); cursor: pointer; border-bottom: 1px solid transparent; margin-bottom: -7px; white-space: nowrap; transition: color .2s; }
-  .tab:hover { color: var(--ink-soft); }
-  .tab.active { color: var(--ink); border-bottom-color: var(--terracotta); }
-  .tab em { font-family: var(--font-display); font-style: italic; text-transform: none; letter-spacing: 0; color: var(--terracotta); margin-right: 4px; font-size: 12px; }
+  .tabs-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-shrink: 0; flex-wrap: wrap; }
+  .tabs-bar .tabs { margin-bottom: 0; }
+  .tabs-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .tabs { display: inline-flex; gap: 2px; padding: 4px; background: var(--surface); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); overflow-x: auto; flex-shrink: 0; align-items: center; }
+  .tab { background: transparent; border: none; padding: 8px 18px; font-family: var(--font-body); font-size: 12px; font-weight: 500; color: var(--ink-mute); cursor: pointer; border-radius: var(--radius-xl); white-space: nowrap; transition: all .25s cubic-bezier(.2, .7, .2, 1); }
+  .tab.active { color: var(--ink); background: var(--surface-soft); }
+  .tab em { font-family: var(--font-display); font-style: italic; font-weight: 400; color: var(--terracotta); margin-right: 4px; font-size: 13px; }
 
-  .error-banner { background: rgba(162, 58, 42, 0.08); color: var(--red); padding: 8px 16px; font-size: 11px; border-left: 2px solid var(--red); margin: 10px 0; }
+  .error-banner { background: rgba(194, 90, 74, 0.08); color: var(--red); padding: 8px 16px; font-size: 11px; border-radius: var(--radius-sm); border-left: 2px solid var(--red); margin: 10px 0; }
 
   /* ====== HOME VIEW (modules) ====== */
-  .home-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 0 10px; gap: 12px; flex-wrap: wrap; flex-shrink: 0; }
-  .home-toolbar-info { font-size: 10px; color: var(--ink-mute); letter-spacing: 0.12em; text-transform: uppercase; font-style: italic; }
-  .edit-actions { display: flex; gap: 6px; }
-  .pill-btn { background: transparent; border: 1px solid var(--line); padding: 5px 11px; font-family: var(--font-body); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft); transition: all .2s; }
-  .pill-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .pill-btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .pill-btn.primary:hover { background: var(--moss); border-color: var(--moss); }
-  .pill-btn.terracotta { background: var(--terracotta); color: var(--paper); border-color: var(--terracotta); }
-  .pill-btn.terracotta:hover { background: var(--ink); border-color: var(--ink); }
+  .home-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 4px 0 14px; gap: 12px; flex-wrap: wrap; flex-shrink: 0; }
+  .home-toolbar-info { font-size: 12px; color: var(--ink-mute); font-style: italic; }
+  .edit-actions { display: flex; gap: 8px; }
+  .pill-btn { background: var(--surface); border: none; padding: 8px 18px; font-family: var(--font-body); font-size: 12px; font-weight: 500; color: var(--ink-soft); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); transition: all .25s cubic-bezier(.2, .7, .2, 1); }
+  .pill-btn.primary { background: var(--ink); color: var(--surface); }
+  .pill-btn.terracotta { background: var(--terracotta); color: var(--surface); }
 
-  .home-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding-bottom: 14px; flex: 1; min-height: 0; overflow-y: auto; align-items: start; }
-  .home-masonry { display: flex; flex-direction: column; gap: 14px; padding-bottom: 14px; flex: 1; min-height: 0; overflow-y: auto; }
+  .home-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding-bottom: 14px; flex: 1; min-height: 0; overflow-y: auto; align-items: start; grid-auto-flow: row dense; }
+  .home-masonry { display: flex; flex-direction: column; gap: 14px; padding-top: 4px; padding-bottom: 14px; flex: 1; min-height: 0; overflow-y: auto; }
   .home-masonry-row { display: flex; gap: 14px; align-items: flex-start; }
   .home-masonry-col { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .module {
-    background: var(--paper);
-    border: 1px solid var(--line);
-    padding: 11px 14px;
+    background: var(--surface);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 10px;
     position: relative;
     min-height: 0;
+    box-shadow: var(--shadow-sm);
+    transition: transform .25s cubic-bezier(.2, .7, .2, 1), box-shadow .25s;
   }
   .module.span-2 { grid-column: span 2; }
   .module.span-3 { grid-column: span 3; }
@@ -121,129 +133,133 @@
     justify-content: space-between;
     align-items: baseline;
     gap: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--line-soft);
   }
   .module-title {
     font-family: var(--font-display);
     font-weight: 400; font-style: italic;
-    font-size: 17px; letter-spacing: -0.01em;
+    font-size: 20px; letter-spacing: -0.015em;
+    line-height: 1;
   }
   .module-title em { font-weight: 300; color: var(--terracotta); margin-right: 4px; }
-  .module-sub { font-size: 9px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.18em; }
+  .module-sub { font-size: 11px; color: var(--ink-mute); font-weight: 500; }
 
   /* Edit mode */
   .edit-mode .module {
     cursor: grab;
-    background: linear-gradient(135deg, var(--paper) 0%, var(--paper-deep) 100%);
-    border-color: var(--terracotta);
-    border-style: dashed;
+    border: 1.5px dashed var(--terracotta);
+    box-shadow: none;
   }
+  .edit-mode .module:hover { transform: none; box-shadow: none; }
   .edit-mode .module:active { cursor: grabbing; }
   .edit-mode .module.dragging { opacity: 0.4; }
   .edit-mode .module.drop-target { border-style: solid; box-shadow: 0 0 0 2px var(--terracotta); }
   .module-edit-controls {
     display: none;
     position: absolute;
-    top: 6px; right: 6px;
+    top: 8px; right: 8px;
     gap: 4px;
-    background: var(--paper-deep);
+    background: var(--surface);
     padding: 4px;
-    border: 1px solid var(--terracotta);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
   }
   .edit-mode .module-edit-controls { display: flex; }
   .edit-btn {
-    width: 22px; height: 22px;
-    background: var(--paper);
-    border: 1px solid var(--line);
+    width: 24px; height: 24px;
+    background: var(--surface-soft);
+    border: none;
+    border-radius: 6px;
     color: var(--ink); cursor: pointer;
     font-size: 11px;
     display: inline-flex; align-items: center; justify-content: center;
     transition: all .15s;
   }
-  .edit-btn:hover { background: var(--ink); color: var(--paper); }
-  .edit-btn.danger:hover { background: var(--red); color: var(--paper); border-color: var(--red); }
+  .edit-btn:hover { background: var(--ink); color: var(--surface); }
+  .edit-btn.danger:hover { background: var(--red); color: var(--surface); }
 
   /* Module settings drawer */
   .module-settings-drawer {
-    background: rgba(26, 24, 20, 0.04);
-    border-left: 2px solid var(--terracotta);
+    background: var(--surface-soft);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--terracotta);
     padding: 10px 12px;
-    margin-top: 6px;
+    margin-top: 4px;
   }
-  .settings-title { font-size: 8px; color: var(--terracotta); text-transform: uppercase; letter-spacing: 0.22em; margin-bottom: 8px; font-weight: 500; }
+  .settings-title { font-size: 9px; color: var(--terracotta); text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 8px; font-weight: 600; }
   .settings-checks { display: flex; flex-wrap: wrap; gap: 6px; }
-  .settings-check { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; padding: 3px 7px; background: var(--paper); border: 1px solid var(--line); cursor: pointer; user-select: none; transition: border-color .15s; }
-  .settings-check:hover { border-color: var(--terracotta); }
+  .settings-check { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; padding: 4px 9px; background: var(--surface); border: none; border-radius: var(--radius-sm); cursor: pointer; user-select: none; box-shadow: var(--shadow-sm); }
   .settings-check input { cursor: pointer; accent-color: var(--terracotta); margin: 0; }
   .settings-select {
-    width: 100%; padding: 6px 8px;
-    background: var(--paper); border: 1px solid var(--line);
-    font-family: var(--font-body); font-size: 11px;
+    width: 100%; padding: 7px 10px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body); font-size: 12px;
     color: var(--ink);
   }
-  .settings-hint { font-size: 9px; color: var(--ink-mute); margin-top: 6px; font-style: italic; }
+  .settings-hint { font-size: 10px; color: var(--ink-mute); margin-top: 6px; font-style: italic; }
 
   /* Module picker (overlay) */
   .picker-backdrop {
     position: fixed; inset: 0;
-    background: rgba(26, 24, 20, 0.5);
+    background: rgba(29, 27, 24, 0.45);
+    backdrop-filter: blur(4px);
     z-index: 100;
     display: flex; align-items: center; justify-content: center;
     padding: 20px;
   }
   .picker {
-    background: var(--paper);
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: none;
+    border-radius: var(--radius-lg);
     padding: 28px;
     max-width: 480px; width: 100%;
-    box-shadow: 0 24px 80px -20px rgba(0,0,0,0.4);
+    box-shadow: var(--shadow-lg);
   }
   .picker-title {
     font-family: var(--font-display);
     font-weight: 400; font-style: italic;
-    font-size: 22px; letter-spacing: -0.02em;
+    font-size: 24px; letter-spacing: -0.02em;
     margin-bottom: 4px;
   }
-  .picker-sub { font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 18px; }
-  .picker-list { display: flex; flex-direction: column; gap: 6px; }
+  .picker-sub { font-size: 11px; color: var(--ink-mute); font-weight: 500; margin-bottom: 18px; }
+  .picker-list { display: flex; flex-direction: column; gap: 8px; }
   .picker-item {
-    background: transparent; border: 1px solid var(--line);
-    padding: 10px 14px; cursor: pointer;
+    background: var(--surface-soft); border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 16px; cursor: pointer;
     font-family: var(--font-body); color: var(--ink);
-    transition: all .2s;
+    transition: all .2s cubic-bezier(.2, .7, .2, 1);
     display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
     text-align: left;
   }
-  .picker-item:hover:not(:disabled) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .picker-item:disabled { opacity: 0.4; }
-  .picker-item-name { font-family: var(--font-display); font-style: italic; font-size: 14px; }
-  .picker-item-desc { font-size: 10px; color: var(--ink-mute); letter-spacing: 0.05em; }
-  .picker-item:hover .picker-item-desc { color: var(--paper); opacity: 0.7; }
+  .picker-item-name { font-family: var(--font-display); font-style: italic; font-size: 15px; }
+  .picker-item-desc { font-size: 11px; color: var(--ink-mute); }
+
   .picker-close {
-    margin-top: 18px; width: 100%;
-    background: transparent; border: 1px solid var(--line);
-    padding: 9px; cursor: pointer;
-    font-family: var(--font-body); font-size: 9px;
-    text-transform: uppercase; letter-spacing: 0.2em;
+    margin-top: 16px; width: 100%;
+    background: var(--surface-soft); border: none;
+    border-radius: var(--radius-xl);
+    padding: 10px; cursor: pointer;
+    font-family: var(--font-body); font-size: 11px; font-weight: 500;
     color: var(--ink-soft);
+    transition: all .2s;
   }
-  .picker-close:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
   /* HAN module */
-  .han-value { font-family: var(--font-display); font-weight: 300; font-size: 36px; letter-spacing: -0.04em; line-height: 1; font-variation-settings: 'opsz' 144, 'SOFT' 30; margin-top: 4px; }
+  .han-value { font-family: var(--font-display); font-weight: 300; font-size: 52px; letter-spacing: -0.045em; line-height: 1; font-variation-settings: 'opsz' 144, 'SOFT' 30; margin-top: 2px; }
   .han-value em { font-style: italic; color: var(--terracotta); font-weight: 400; }
-  .han-value .unit { font-size: 0.35em; font-style: italic; color: var(--ink-mute); letter-spacing: 0; }
-  .han-detail { font-size: 10px; color: var(--ink-mute); margin-top: 2px; font-style: italic; }
-  .sparkline { width: 100%; height: 36px; margin-top: 8px; }
-  .sparkline path { fill: none; stroke: var(--terracotta); stroke-width: 1.2; }
-  .sparkline .area { fill: var(--terracotta); opacity: 0.08; stroke: none; }
+  .han-value .unit { font-size: 0.32em; font-style: italic; color: var(--ink-mute); letter-spacing: 0; margin-left: 4px; font-weight: 400; }
+  .han-detail { font-size: 11px; color: var(--ink-mute); font-style: italic; }
+  .sparkline { width: 100%; height: 40px; margin-top: 6px; }
+  .sparkline path { fill: none; stroke: var(--terracotta); stroke-width: 1.5; stroke-linecap: round; }
+  .sparkline .area { fill: var(--terracotta); opacity: 0.1; stroke: none; }
 
   /* Combined HAN+Weather module */
   .han-weather-split { display: flex; gap: 0; margin-top: 4px; }
   .han-weather-half { flex: 1; }
-  .han-weather-half + .han-weather-half { border-left: 1px solid var(--line-soft); padding-left: 14px; }
-  .wx-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line-soft); }
+  .han-weather-half + .han-weather-half { border-left: 1px solid var(--line); padding-left: 14px; }
+  .wx-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
   .wx-icon { font-size: 22px; line-height: 1; flex-shrink: 0; width: 26px; text-align: center; }
   .wx-details { flex: 1; min-width: 0; }
   .wx-condition { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--ink-soft); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -252,162 +268,209 @@
   .wx-temp.hi { color: var(--terracotta); font-style: italic; }
   .wx-temp-sep { font-size: 10px; color: var(--ink-mute); }
   .wx-precip { font-size: 10px; color: var(--moss); flex-shrink: 0; font-style: italic; }
+  .wx-meta { display: flex; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+  .wx-meta-item { font-size: 10px; color: var(--ink-mute); }
+  .clothing-inline { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--ink-soft); flex-shrink: 0; max-width: 88px; line-height: 1.35; text-align: right; border-left: 1px solid var(--line); padding-left: 10px; align-self: center; }
 
   /* Weather module */
   .weather-main { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
-  .weather-temp { font-family: var(--font-display); font-weight: 300; font-size: 36px; letter-spacing: -0.04em; line-height: 1; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
+  .weather-temp { font-family: var(--font-display); font-weight: 300; font-size: 52px; letter-spacing: -0.045em; line-height: 1; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
   .weather-temp em { font-style: italic; color: var(--terracotta); font-weight: 400; }
   .weather-detail { font-size: 11px; color: var(--ink-mute); font-style: italic; line-height: 1.4; }
   .weather-detail span { color: var(--moss); font-style: normal; }
   .weather-mini { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
-  .weather-mini .mini-metric { display: flex; flex-direction: column; gap: 1px; }
-  .weather-mini .mini-value { font-family: var(--font-display); font-weight: 400; font-size: 16px; letter-spacing: -0.02em; line-height: 1; }
-  .weather-mini .mini-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); }
+  .weather-mini .mini-metric { display: flex; flex-direction: column; gap: 2px; }
+  .weather-mini .mini-value { font-family: var(--font-display); font-weight: 400; font-size: 17px; letter-spacing: -0.02em; line-height: 1; }
+  .weather-mini .mini-label { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); }
 
   /* Transit module */
-  .transit-row { display: flex; align-items: baseline; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line-soft); }
+  .transit-row { display: flex; align-items: baseline; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--line); }
   .transit-row:last-child { border-bottom: none; }
-  .transit-line { font-family: var(--font-display); font-weight: 400; font-size: 12px; min-width: 20px; text-align: center; flex-shrink: 0; }
+  .transit-line { font-family: var(--font-display); font-weight: 400; font-size: 12px; min-width: 44px; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .transit-mode-icon { font-size: 11px; line-height: 1; flex-shrink: 0; }
   .transit-line.bus { color: var(--terracotta); }
   .transit-line.metro { color: var(--moss); }
-  .transit-label { flex: 1; font-size: 10px; color: var(--ink-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .transit-label { flex: 1; font-size: 11px; color: var(--ink-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .transit-times { display: flex; gap: 8px; flex-shrink: 0; }
   .transit-time { font-family: var(--font-display); font-weight: 400; font-size: 13px; letter-spacing: -0.01em; }
   .transit-time.now { color: var(--moss); font-style: italic; }
   .transit-time.soon { color: var(--terracotta); }
-  .transit-sep { font-size: 10px; color: var(--line); align-self: center; }
+  .transit-sep { font-size: 10px; color: var(--ink-mute); opacity: 0.3; align-self: center; }
+
+  /* Camera module */
+  .camera-img { width: 100%; display: block; object-fit: cover; background: var(--surface-deep); aspect-ratio: 16/9; border-radius: var(--radius-sm); }
+  .camera-offline { display: flex; align-items: center; justify-content: center; min-height: 80px; background: var(--surface-soft); border-radius: var(--radius-sm); font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.15em; font-style: italic; }
+  .camera-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  .camera-grid-cell { position: relative; border-radius: var(--radius-sm); overflow: hidden; }
+  .camera-grid-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--surface-deep); }
+  .camera-grid-label { position: absolute; bottom: 4px; left: 5px; font-size: 8px; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.15em; text-shadow: 0 1px 3px rgba(0,0,0,0.9); pointer-events: none; }
+  .camera-grid-offline { aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; background: var(--surface-deep); font-size: 9px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.15em; font-style: italic; text-align: center; padding: 4px; }
+
+  /* Doorbell overlay */
+  .doorbell-overlay { position: fixed; inset: 0; background: rgba(29, 27, 24, 0.75); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(6px); }
+  .doorbell-panel { background: var(--surface); border: none; border-radius: var(--radius-lg); max-width: 440px; width: 100%; box-shadow: var(--shadow-lg); overflow: hidden; }
+  .doorbell-head { padding: 18px 22px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .doorbell-title { font-family: var(--font-display); font-weight: 300; font-style: italic; font-size: 22px; letter-spacing: -0.02em; line-height: 1.1; }
+  .doorbell-title em { color: var(--terracotta); font-weight: 400; }
+  .doorbell-sub { font-size: 11px; color: var(--ink-mute); font-weight: 500; margin-top: 4px; }
+  .doorbell-progress { height: 3px; background: var(--line); }
+  .doorbell-progress-bar { height: 100%; background: var(--terracotta); transition: width 1s linear; }
+  .doorbell-img { width: 100%; display: block; object-fit: cover; background: var(--surface-deep); min-height: 180px; max-height: 320px; }
+  .doorbell-img-offline { display: flex; align-items: center; justify-content: center; min-height: 180px; background: var(--surface-soft); font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.15em; font-style: italic; }
+  .doorbell-footer { padding: 12px 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); }
+  .doorbell-countdown { font-size: 11px; color: var(--ink-mute); font-style: italic; }
+  .doorbell-countdown strong { font-family: var(--font-display); font-style: italic; color: var(--terracotta); font-size: 15px; font-weight: 400; }
+
+  /* Calendar module */
+  .cal-list { display: flex; flex-direction: column; }
+  .cal-event { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .cal-event:last-child { border-bottom: none; }
+  .cal-time { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--terracotta); flex-shrink: 0; min-width: 64px; line-height: 1.3; }
+  .cal-time.allday { font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; font-style: normal; color: var(--ink-mute); padding-top: 2px; }
+  .cal-body { flex: 1; min-width: 0; }
+  .cal-title { font-size: 13px; font-weight: 500; line-height: 1.3; color: var(--ink); }
+  .cal-location { font-size: 11px; color: var(--ink-mute); margin-top: 1px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-duration { font-size: 10px; color: var(--ink-mute); margin-top: 1px; }
 
   /* Scenes module */
-  .scene-list { display: flex; flex-direction: column; gap: 6px; }
-  .scene-btn { background: transparent; border: 1px solid var(--line); padding: 8px 12px; text-align: left; cursor: pointer; font-family: var(--font-body); color: var(--ink); transition: all .2s; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .scene-btn:hover:not(:disabled) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .scene-btn.ran { background: var(--moss); color: var(--paper); border-color: var(--moss); }
-  .scene-name { font-family: var(--font-display); font-style: italic; font-size: 14px; font-weight: 400; }
-  .scene-arrow { font-size: 10px; opacity: 0.5; }
+  .scene-list { display: flex; flex-direction: column; gap: 8px; }
+  .scene-btn { background: var(--surface-soft); border: none; border-radius: var(--radius-sm); padding: 12px 16px; text-align: left; cursor: pointer; font-family: var(--font-body); color: var(--ink); transition: all .2s cubic-bezier(.2, .7, .2, 1); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+  .scene-btn.ran { background: var(--moss); color: var(--surface); }
+  .scene-name { font-family: var(--font-display); font-style: italic; font-size: 15px; font-weight: 400; }
+  .scene-arrow { font-size: 12px; opacity: 0.4; transition: opacity .2s, transform .2s; }
 
   /* Favorites module */
-  .favorites-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
-  .favorites-grid > .card { padding: 9px 10px; }
+  .favorites-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .favorites-grid > .card { padding: 14px 16px; border-radius: var(--radius-sm); }
 
   /* Zones overview module */
-  .zones-overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
-  .zone-tile { background: var(--paper); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
-  .zone-tile-name { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 14px; line-height: 1.1; }
+  .zones-overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; min-width: 0; }
+  .zone-tile { min-width: 0; background: var(--surface-soft); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; cursor: pointer; transition: background .2s; }
+  .zone-tile-name { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 14px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .zone-tile-stats { display: flex; gap: 10px; flex-wrap: wrap; }
   .zone-tile-stat { display: flex; flex-direction: column; gap: 1px; }
   .zone-tile-val { font-family: var(--font-display); font-weight: 400; font-size: 14px; letter-spacing: -0.02em; line-height: 1; }
   .zone-tile-val em { font-style: italic; color: var(--moss); }
   .zone-tile-val.alert { color: var(--red); font-style: italic; }
-  .zone-tile-lbl { font-size: 7px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); }
+  .zone-tile-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-mute); font-weight: 600; }
+
+  /* Zone popup */
+  .zone-popup-backdrop { position: fixed; inset: 0; background: rgba(29,27,24,0.45); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .zone-popup { background: var(--surface); border-radius: var(--radius-lg); max-width: 400px; width: 100%; box-shadow: var(--shadow-lg); overflow: hidden; max-height: 85dvh; overflow-y: auto; }
+  .zone-popup-head { padding: 18px 20px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  .zone-popup-title { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 22px; letter-spacing: -0.02em; line-height: 1; }
+  .zone-popup-section { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .zone-popup-section:last-child { border-bottom: none; }
+  .zone-popup-section-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-mute); font-weight: 600; margin-bottom: 12px; }
+  .zpop-device { padding: 4px 0 8px; }
+  .zpop-device + .zpop-device { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
+  .zpop-device-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .zpop-device-name { font-size: 13px; font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .zpop-temp-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-size: 12px; color: var(--ink-mute); }
+  .zpop-target { font-family: var(--font-display); font-style: italic; font-size: 18px; letter-spacing: -0.02em; color: var(--terracotta); }
 
   /* ====== STYRING (3-col floors) ====== */
   .columns { display: flex; flex-direction: row; padding-top: 8px; flex: 1; min-height: 0; overflow: hidden; }
-  .col { flex: 1; min-width: 0; padding: 0 14px 16px; border-left: 1px solid var(--line-soft); height: 100%; overflow-y: auto; }
+  .col { flex: 1; min-width: 0; padding: 0 14px 16px; border-left: 1px solid var(--line); height: 100%; overflow-y: auto; }
   .col:first-child { padding-left: 0; border-left: none; }
   .col-head { padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
   .col-title { font-family: var(--font-display); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; line-height: 1; font-variation-settings: 'opsz' 144; }
   .col-title em { font-style: italic; font-weight: 300; color: var(--terracotta); margin-right: 4px; }
-  .col-subtitle { font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.18em; white-space: nowrap; }
+  .col-subtitle { font-size: 11px; color: var(--ink-mute); font-weight: 500; white-space: nowrap; }
   .col-tabs { display: flex; gap: 0; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
-  .col-tab { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 5px 12px; font-family: var(--font-body); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); cursor: pointer; margin-bottom: -1px; transition: color .15s; }
-  .col-tab:hover { color: var(--ink); }
-  .col-tab.active { color: var(--ink); border-bottom-color: var(--terracotta); font-weight: 600; }
+  .col-tab { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 5px 12px; font-family: var(--font-body); font-size: 10px; font-weight: 500; color: var(--ink-mute); cursor: pointer; margin-bottom: -1px; transition: color .15s; }
+  .col-tab.active { color: var(--ink); border-bottom-color: var(--terracotta); }
 
   /* ZONES & GRID */
   .zone { margin-bottom: 12px; }
   .zone:last-child { margin-bottom: 4px; }
   .device-group { margin-bottom: 4px; }
   .device-group:last-child { margin-bottom: 0; }
-  .device-group-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-mute); padding: 5px 0 3px; }
+  .device-group-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); padding: 5px 0 3px; font-weight: 600; }
   .zone-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 5px; }
   .zone-name { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 16px; letter-spacing: -0.01em; }
-  .zone-summary { font-size: 9px; color: var(--ink-mute); letter-spacing: 0.04em; flex: 1; border-left: 1px solid var(--line); padding-left: 10px; font-style: italic; }
+  .zone-summary { font-size: 10px; color: var(--ink-mute); flex: 1; border-left: 1px solid var(--line); padding-left: 10px; font-style: italic; }
   .zone-summary span { color: var(--moss); font-style: normal; font-weight: 500; }
 
-  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
-  .grid-wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .grid-wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
 
   /* CARDS */
-  .card { background: var(--paper); padding: 5px 7px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; transition: background .2s; position: relative; }
-  .card:hover { background: var(--paper-deep); }
+  .card { background: var(--surface-soft); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background .2s; position: relative; }
   .card.toggling { opacity: 0.6; pointer-events: none; }
   .card.off { opacity: 0.55; }
-  .card.expanded { background: var(--paper-deep); }
+  .card.expanded { background: var(--surface-deep); }
   .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
-  .card-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-mute); font-weight: 500; }
-  .card-name { font-family: var(--font-body); font-weight: 600; font-size: 11px; line-height: 1.2; letter-spacing: 0; color: var(--ink); margin-top: 1px; }
-  .card-state { font-size: 8px; text-transform: uppercase; letter-spacing: 0.14em; padding: 2px 5px; border-radius: 2px; font-weight: 600; flex-shrink: 0; line-height: 1.2; }
-  .state-on { background: var(--moss); color: var(--paper); }
-  .state-off { background: var(--paper-deep); color: var(--ink-mute); }
-  .state-active { background: var(--terracotta); color: var(--paper); }
-  .state-alert { background: var(--red); color: var(--paper); }
+  .card-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-mute); font-weight: 600; }
+  .card-name { font-family: var(--font-body); font-weight: 600; font-size: 12px; line-height: 1.2; letter-spacing: 0; color: var(--ink); margin-top: 1px; }
+  .card-state { font-size: 8px; text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 8px; border-radius: var(--radius-xl); font-weight: 600; flex-shrink: 0; line-height: 1.2; }
+  .state-on { background: rgba(82, 117, 88, 0.15); color: var(--moss); }
+  .state-off { background: rgba(29, 27, 24, 0.06); color: var(--ink-mute); }
+  .state-active { background: rgba(210, 137, 104, 0.15); color: var(--terracotta); }
+  .state-alert { background: rgba(194, 90, 74, 0.15); color: var(--red); }
 
   .reading { display: flex; align-items: baseline; gap: 3px; line-height: 0.9; }
-  .reading-value { font-family: var(--font-body); font-weight: 500; font-size: 17px; letter-spacing: -0.02em; }
+  .reading-value { font-family: var(--font-display); font-weight: 400; font-size: 20px; letter-spacing: -0.025em; }
   .reading-value em { font-style: italic; color: var(--terracotta); font-weight: 400; }
 
   .metrics-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .mini-metric { display: flex; flex-direction: column; gap: 1px; }
-  .mini-value { font-family: var(--font-body); font-weight: 500; font-size: 12px; letter-spacing: -0.01em; line-height: 1; }
+  .mini-value { font-family: var(--font-display); font-weight: 400; font-size: 15px; letter-spacing: -0.02em; line-height: 1; }
   .mini-value em { font-style: italic; color: var(--moss); }
   .mini-value.ok { color: var(--moss); font-style: italic; }
   .mini-value.alert { color: var(--red); font-style: italic; }
   .mini-value.warn { color: var(--terracotta); font-style: italic; }
-  .mini-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); }
+  .mini-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); font-weight: 500; }
 
   .control { padding-top: 1px; cursor: default; }
-  .slider { -webkit-appearance: none; appearance: none; width: 100%; height: 16px; background: transparent; cursor: pointer; }
-  .slider::-webkit-slider-runnable-track { height: 1px; background: var(--ink); }
-  .slider::-moz-range-track { height: 1px; background: var(--ink); }
-  .slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; background: var(--terracotta); border-radius: 50%; margin-top: -5.5px; box-shadow: 0 0 0 3px var(--paper); transition: transform .15s; }
-  .slider::-webkit-slider-thumb:active { transform: scale(1.2); }
-  .slider::-moz-range-thumb { width: 12px; height: 12px; background: var(--terracotta); border-radius: 50%; border: none; box-shadow: 0 0 0 3px var(--paper); }
+  .slider { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; cursor: pointer; }
+  .slider::-webkit-slider-runnable-track { height: 4px; background: var(--surface-deep); border-radius: 2px; }
+  .slider::-moz-range-track { height: 4px; background: var(--surface-deep); border-radius: 2px; }
+  .slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: var(--surface); border-radius: 50%; margin-top: -7px; box-shadow: 0 2px 6px rgba(29, 27, 24, 0.15), 0 0 0 0.5px rgba(29, 27, 24, 0.04); transition: transform .15s; }
+  .slider::-moz-range-thumb { width: 18px; height: 18px; background: var(--surface); border-radius: 50%; border: none; box-shadow: 0 2px 6px rgba(29, 27, 24, 0.15); }
+  .slider-temp::-webkit-slider-thumb { background: var(--terracotta); }
+  .slider-temp::-moz-range-thumb { background: var(--terracotta); }
   .slider-dim::-webkit-slider-thumb { background: var(--gold); }
   .slider-dim::-moz-range-thumb { background: var(--gold); }
-  .slider-marks { display: flex; justify-content: space-between; font-size: 7px; color: var(--ink-mute); letter-spacing: 0.15em; margin-top: 1px; text-transform: uppercase; }
+  .slider-marks { display: flex; justify-content: space-between; font-size: 7px; color: var(--ink-mute); letter-spacing: 0.12em; margin-top: 1px; text-transform: uppercase; }
 
-  .toggle { align-self: flex-start; border: 1px solid var(--ink); background: transparent; color: var(--ink); padding: 4px 9px; font-family: var(--font-body); font-size: 8px; text-transform: uppercase; letter-spacing: 0.2em; transition: all .2s; }
-  .toggle:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
-  .toggle.is-on { background: var(--moss); color: var(--paper); border-color: var(--moss); }
+  .toggle { align-self: flex-start; border: none; background: var(--surface-soft); color: var(--ink-soft); padding: 5px 12px; font-family: var(--font-body); font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; border-radius: var(--radius-xl); transition: all .2s; }
+  .toggle.is-on { background: rgba(82, 117, 88, 0.15); color: var(--moss); }
 
   .featured .card-name::first-letter { font-family: var(--font-display); font-style: italic; color: var(--terracotta); font-weight: 300; }
 
-  .settings { background: rgba(26, 24, 20, 0.04); border-left: 2px solid var(--terracotta); padding: 10px; margin-top: 4px; cursor: default; animation: slideDown .15s ease-out; }
+  .settings { background: var(--surface-soft); border-radius: var(--radius-sm); border-left: 3px solid var(--terracotta); padding: 10px; margin-top: 6px; cursor: default; animation: slideDown .15s ease-out; }
   @keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
   /* ====== STYRING TILPASS ====== */
   .styring-toolbar { display: flex; align-items: center; justify-content: flex-end; padding: 5px 0 3px; flex-shrink: 0; }
-  .tilpass-btn { background: transparent; border: 1px solid var(--ink-mute); color: var(--ink-mute); padding: 4px 10px; font-family: var(--font-body); font-size: 8px; text-transform: uppercase; letter-spacing: 0.2em; cursor: pointer; transition: all .2s; }
-  .tilpass-btn:hover, .tilpass-btn.active { border-color: var(--ink); color: var(--ink); background: var(--paper-deep); }
-  .config-overlay { position: fixed; inset: 0; background: rgba(26,24,20,0.5); z-index: 200; display: flex; align-items: flex-start; justify-content: flex-end; }
-  .config-panel { width: min(420px, 95vw); height: 100dvh; background: var(--paper); overflow-y: auto; box-shadow: -4px 0 24px rgba(0,0,0,0.16); display: flex; flex-direction: column; }
-  .config-head { padding: 20px 22px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--paper); z-index: 1; }
+  .tilpass-btn { background: var(--surface); border: none; border-radius: var(--radius-xl); color: var(--ink-soft); padding: 6px 14px; font-family: var(--font-body); font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; cursor: pointer; box-shadow: var(--shadow-sm); transition: all .2s; }
+  .tilpass-btn.active { background: var(--ink); color: var(--surface); }
+  .config-overlay { position: fixed; inset: 0; background: rgba(29,27,24,0.45); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: flex-start; justify-content: flex-end; }
+  .config-panel { width: min(420px, 95vw); height: 100dvh; background: var(--surface); overflow-y: auto; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; }
+  .config-head { padding: 20px 22px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--surface); z-index: 1; }
   .config-title { font-family: var(--font-display); font-weight: 400; font-size: 20px; letter-spacing: -0.02em; }
   .config-title em { font-style: italic; color: var(--terracotta); }
-  .config-close { background: transparent; border: 1px solid var(--line); color: var(--ink); padding: 4px 10px; font-size: 10px; cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase; }
-  .config-close:hover { background: var(--paper-deep); }
+  .config-close { background: var(--surface-soft); border: none; border-radius: var(--radius-xl); color: var(--ink-soft); padding: 6px 14px; font-size: 11px; font-weight: 500; cursor: pointer; transition: all .2s; }
   .config-body { padding: 16px 22px; flex: 1; }
   .config-floor { margin-bottom: 24px; }
   .config-floor-title { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 15px; letter-spacing: -0.01em; margin-bottom: 8px; color: var(--terracotta); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
-  .config-zone-title { font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-mute); margin: 10px 0 5px; }
-  .config-device { display: flex; flex-direction: column; border-left: 2px solid var(--line-soft); padding: 5px 10px; margin-bottom: 3px; transition: border-color .15s; }
-  .config-device:hover { border-color: var(--terracotta); }
+  .config-zone-title { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-mute); margin: 10px 0 5px; font-weight: 600; }
+  .config-device { display: flex; flex-direction: column; background: var(--surface-soft); border-radius: 8px; padding: 6px 10px; margin-bottom: 4px; transition: background .15s; }
   .config-device-row { display: flex; align-items: center; gap: 8px; }
   .config-device-check { width: 13px; height: 13px; accent-color: var(--moss); cursor: pointer; flex-shrink: 0; }
   .config-device-info { flex: 1; }
   .config-device-name { font-size: 12px; font-family: var(--font-display); line-height: 1.2; }
-  .config-device-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-mute); }
-  .config-metrics-toggle { background: none; border: none; color: var(--ink-mute); font-size: 8px; text-transform: uppercase; letter-spacing: 0.15em; cursor: pointer; padding: 2px 0; flex-shrink: 0; }
-  .config-metrics-toggle:hover { color: var(--ink); }
-  .config-caps { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line-soft); }
-  .config-cap-label { display: flex; align-items: center; gap: 3px; font-size: 8px; text-transform: uppercase; letter-spacing: 0.15em; cursor: pointer; padding: 2px 7px; border: 1px solid var(--line); transition: all .15s; user-select: none; }
-  .config-cap-label:hover { border-color: var(--ink-mute); }
+  .config-device-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-mute); font-weight: 600; }
+  .config-metrics-toggle { background: none; border: none; color: var(--ink-mute); font-size: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; cursor: pointer; padding: 2px 0; flex-shrink: 0; }
+  .config-caps { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+  .config-cap-label { display: flex; align-items: center; gap: 3px; font-size: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; cursor: pointer; padding: 3px 8px; background: var(--surface); border: none; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); transition: all .15s; user-select: none; }
   .config-cap-label input { accent-color: var(--moss); width: 10px; height: 10px; cursor: pointer; }
-  .config-cap-label.active { border-color: var(--moss); background: rgba(45,64,48,0.07); }
-  .config-hint { font-size: 9px; color: var(--ink-mute); text-align: center; padding: 16px 0 8px; letter-spacing: 0.1em; }
+  .config-cap-label.active { background: rgba(82,117,88,0.12); color: var(--moss); }
+  .config-hint { font-size: 10px; color: var(--ink-mute); text-align: center; padding: 16px 0 8px; font-style: italic; }
   .config-tabs { display: flex; border-bottom: 1px solid var(--line); padding: 0 22px; flex-shrink: 0; }
-  .config-tab-btn { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 8px 14px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); cursor: pointer; margin-bottom: -1px; transition: color .2s; }
-  .config-tab-btn:hover { color: var(--ink); }
+  .config-tab-btn { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 8px 14px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-mute); cursor: pointer; margin-bottom: -1px; transition: color .2s; }
   .config-tab-btn.active { color: var(--ink); border-bottom-color: var(--terracotta); }
 
   /* ====== SIKKERHET ====== */
@@ -415,12 +478,13 @@
     padding: 18px 22px;
     margin: 14px 0;
     border-left: 3px solid var(--moss);
-    background: rgba(45, 64, 48, 0.05);
+    background: rgba(82, 117, 88, 0.06);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     gap: 18px;
   }
-  .security-status.alert { border-left-color: var(--red); background: rgba(162, 58, 42, 0.06); }
+  .security-status.alert { border-left-color: var(--red); background: rgba(194, 90, 74, 0.06); }
   .security-status-icon {
     font-family: var(--font-display); font-style: italic;
     font-size: 36px; color: var(--moss); line-height: 1;
@@ -437,38 +501,39 @@
     display: flex; align-items: baseline;
     justify-content: space-between; gap: 12px;
     padding-bottom: 8px; margin-bottom: 10px;
-    border-bottom: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line);
   }
   .sec-section-title {
     font-family: var(--font-display); font-weight: 400; font-style: italic;
     font-size: 18px; letter-spacing: -0.01em;
   }
   .sec-section-title em { font-weight: 300; color: var(--terracotta); margin-right: 4px; }
-  .sec-section-count { font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.18em; }
+  .sec-section-count { font-size: 11px; color: var(--ink-mute); font-weight: 500; }
 
-  .event-log { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); max-height: 320px; overflow-y: auto; }
+  .event-log { display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow-y: auto; }
   .event-row {
-    background: var(--paper);
+    background: var(--surface-soft);
+    border-radius: 8px;
     padding: 8px 12px;
     display: flex; align-items: center; gap: 12px;
     font-size: 12px;
   }
-  .event-row.alert { background: rgba(162, 58, 42, 0.04); }
+  .event-row.alert { background: rgba(194, 90, 74, 0.06); }
   .event-time { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--ink-mute); flex-shrink: 0; min-width: 48px; }
   .event-icon { font-size: 14px; flex-shrink: 0; }
   .event-text { flex: 1; line-height: 1.3; }
   .event-text strong { font-weight: 600; }
-  .event-zone { font-size: 9px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.15em; flex-shrink: 0; }
+  .event-zone { font-size: 9px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.12em; flex-shrink: 0; font-weight: 500; }
 
-  .empty { color: var(--ink-mute); padding: 24px; text-align: center; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-style: italic; }
+  .empty { color: var(--ink-mute); padding: 24px; text-align: center; font-size: 12px; font-style: italic; }
 
   .colophon { display: none; }
   .colophon em { font-family: var(--font-display); font-style: italic; font-weight: 300; text-transform: none; letter-spacing: 0; font-size: 11px; color: var(--ink-soft); }
 
-  .flow-list { display: flex; flex-direction: column; gap: 6px; max-width: 700px; padding-top: 14px; }
-  .flow-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--paper); border: 1px solid var(--line); gap: 12px; }
+  .flow-list { display: flex; flex-direction: column; gap: 8px; max-width: 700px; padding-top: 14px; }
+  .flow-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--surface-soft); border: none; border-radius: var(--radius-sm); gap: 12px; }
   .flow-row .flow-name { font-family: var(--font-display); font-style: italic; font-size: 15px; flex: 1; }
-  .run-btn { background: var(--ink); color: var(--paper); border: none; padding: 6px 14px; font-family: var(--font-body); font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em; }
+  .run-btn { background: var(--ink); color: var(--surface); border: none; padding: 7px 16px; font-family: var(--font-body); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; border-radius: var(--radius-xl); transition: all .2s; }
   .run-btn:disabled { background: var(--ink-mute); }
   .run-btn.done { background: var(--moss); }
 
@@ -484,7 +549,7 @@
     .module.span-2, .module.span-3 { grid-column: span 1; }
     .home-masonry-row { flex-direction: column; }
     .columns { grid-template-columns: 1fr !important; }
-    .col { padding: 0; border-left: none; border-top: 1px solid var(--line-soft); padding-top: 14px; margin-top: 14px; }
+    .col { padding: 0; border-left: none; border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
     .col:first-child { border-top: none; padding-top: 0; margin-top: 0; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
   }
@@ -880,9 +945,11 @@ const MODULE_TYPES = {
   han: { title: "HAN-måler", desc: "Live effekt og forbruk", defaultSpan: 1 },
   weather: { title: "Værmodul", desc: "Utetemperatur og forhold", defaultSpan: 1 },
   transit: { title: "Avganger", desc: "Sanntidsavganger fra Ruter", defaultSpan: 1 },
+  calendar: { title: "Kalender", desc: "Dagens avtaler fra iCloud", defaultSpan: 1 },
+  camera: { title: "Kamera", desc: "Live snapshot fra kamera", defaultSpan: 1 },
   flows: { title: "Hurtigvalg", desc: "Favoritt-flows som scene-knapper", defaultSpan: 1 },
-  favorites: { title: "Favoritt-enheter", desc: "Velg dine viktigste enheter", defaultSpan: 2 },
-  zones: { title: "Soneoversikt", desc: "Mini-status per rom", defaultSpan: 3 },
+  favorites: { title: "Favoritt-enheter", desc: "Velg dine viktigste enheter", defaultSpan: 1 },
+  zones: { title: "Soneoversikt", desc: "Mini-status per rom", defaultSpan: 1 },
 };
 
 function HanModule({ devices, prefs, globalPrefs, isEdit, settingsOpen }) {
@@ -1006,6 +1073,35 @@ function wxIcon(code) {
   return "🌡️";
 }
 
+function clothingRec({ minTemp, maxTemp, precip, wind, symbol }) {
+  if (minTemp == null && maxTemp == null) return null;
+  const temp = minTemp ?? maxTemp;
+  const isSnow = symbol && (symbol.includes("snow") || symbol.includes("sleet"));
+  const isRain = !isSnow && precip > 1.0;
+  const isWindy = wind != null && wind > 10;
+
+  let base;
+  if (temp < -15) base = "Skikkelig vinterutstyr";
+  else if (temp < -10) base = "Vinterjakke, lue og votter";
+  else if (temp < -5) base = "Vinterjakke og lue";
+  else if (temp < 0) base = "Vinterjakke";
+  else if (temp < 5) base = "Tykk jakke";
+  else if (temp < 10) base = "Jakke";
+  else if (temp < 15) base = "Lett jakke";
+  else if (temp < 20) base = "Genser holder";
+  else if (temp < 25) base = "T-skjorte";
+  else base = "Shorts og t-skjorte!";
+
+  const extras = [];
+  if (isSnow) extras.push("varme støvler");
+  else if (isRain) extras.push("regnjakke");
+  if (isWindy && temp < 15) extras.push("vindjakke");
+
+  if (extras.length === 0) return base;
+  if (extras.length === 1) return `${base} og ${extras[0]}`;
+  return `${base}, ${extras[0]} og ${extras[1]}`;
+}
+
 function HanWeatherModule({ devices, zones, globalPrefs }) {
   const han = useMemo(() => findHanMeter(devices, globalPrefs.hanMeterId), [devices, globalPrefs.hanMeterId]);
   const sensor = useMemo(() => findOutdoorSensor(devices, zones, globalPrefs.outdoorSensorId), [devices, zones, globalPrefs.outdoorSensorId]);
@@ -1026,7 +1122,9 @@ function HanWeatherModule({ devices, zones, globalPrefs }) {
         const temps = slice.map(e => e.data?.instant?.details?.air_temperature).filter(t => t != null);
         const symbol = ts[0]?.data?.next_6_hours?.summary?.symbol_code || ts[0]?.data?.next_1_hours?.summary?.symbol_code;
         const precip = ts[0]?.data?.next_6_hours?.details?.precipitation_amount ?? 0;
-        setForecast({ symbol, minTemp: temps.length ? Math.min(...temps) : null, maxTemp: temps.length ? Math.max(...temps) : null, precip });
+        const wind = ts[0]?.data?.instant?.details?.wind_speed;
+        const humidity = ts[0]?.data?.instant?.details?.relative_humidity;
+        setForecast({ symbol, minTemp: temps.length ? Math.min(...temps) : null, maxTemp: temps.length ? Math.max(...temps) : null, precip, wind, humidity });
       } catch (e) { console.error("Forecast:", e); }
     };
     load();
@@ -1036,10 +1134,6 @@ function HanWeatherModule({ devices, zones, globalPrefs }) {
 
   return (
     <>
-      <div className="module-head">
-        <div className="module-title">Live</div>
-        <span className="module-sub" style={{ background: "var(--terracotta)", color: "var(--paper)", padding: "2px 6px", letterSpacing: "0.2em" }}>Nå</span>
-      </div>
       <div className="han-weather-split">
         <div className="han-weather-half">
           <div className="han-value" style={{ fontSize: 28 }}>
@@ -1056,7 +1150,7 @@ function HanWeatherModule({ devices, zones, globalPrefs }) {
           <div className="han-detail">{sensor ? "Ute" : "Ingen sensor"}</div>
         </div>
       </div>
-      {forecast && (
+      {forecast && (() => { const tip = clothingRec(forecast); return (
         <div className="wx-row">
           <div className="wx-icon">{wxIcon(forecast.symbol)}</div>
           <div className="wx-details">
@@ -1066,10 +1160,16 @@ function HanWeatherModule({ devices, zones, globalPrefs }) {
               <span className="wx-temp-sep">–</span>
               <span className="wx-temp hi">{forecast.maxTemp != null ? Math.round(forecast.maxTemp) : "–"}°</span>
             </div>
+            <div className="wx-meta">
+              {forecast.wind != null && <span className="wx-meta-item">💨 {Number(forecast.wind).toFixed(0)} m/s</span>}
+              <span className="wx-meta-item" style={{color: forecast.precip > 0.1 ? "var(--moss)" : "var(--ink-mute)"}}>
+                🌧️ {Number(forecast.precip).toFixed(1)} mm
+              </span>
+            </div>
           </div>
-          {forecast.precip > 0.1 && <div className="wx-precip">{Number(forecast.precip).toFixed(1)} mm</div>}
+          {tip && <div className="clothing-inline">🧥 {tip}</div>}
         </div>
-      )}
+      ); })()}
     </>
   );
 }
@@ -1147,8 +1247,11 @@ function TransitModule() {
           const lineCode = calls[0]?.serviceJourney.line.publicCode || "–";
           return (
             <div key={key} className="transit-row">
-              <div className={`transit-line ${mode}`}>{lineCode}</div>
-              <div className="transit-label">{label} → {dir}</div>
+              <div className={`transit-line ${mode}`}>
+                <span className="transit-mode-icon">{mode === "bus" ? "🚌" : "🚇"}</span>
+                {lineCode}
+              </div>
+              <div className="transit-label">{dir}</div>
               <div className="transit-times">
                 {calls.length === 0
                   ? <span className="transit-time" style={{color:"var(--ink-mute)"}}>–</span>
@@ -1272,35 +1375,351 @@ function FavoritesModuleSettings({ devices, zones, globalPrefs, onUpdate }) {
   );
 }
 
-function ZonesOverviewModule({ tree, devicesByZone }) {
-  // Flat liste over alle ledige soner med enheter
-  const flat = [];
-  const collect = (zone) => {
-    const direct = devicesByZone[zone.id] || [];
-    if (direct.length > 0) flat.push({ zone, devices: direct });
-    (zone.children || []).forEach(collect);
-  };
-  tree.forEach(collect);
+function CameraModule({ globalPrefs }) {
+  const [tick, setTick] = useState(0);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const t = setInterval(() => { setTick(n => n + 1); setErrors({}); }, 60000);
+    return () => clearInterval(t);
+  }, []);
+
+  const cameraIds = globalPrefs.ringCameraIds?.length > 0
+    ? globalPrefs.ringCameraIds
+    : globalPrefs.ringCameraId ? [globalPrefs.ringCameraId] : [];
+  const cameraNames = globalPrefs.ringCameraNames || {};
+
+  const configured = cameraIds.length > 0;
+  const multi = cameraIds.length > 1;
+  const headerLabel = multi ? "Kameraer" : (cameraNames[cameraIds[0]] || globalPrefs.ringCameraName || "Kamera");
 
   return (
     <>
       <div className="module-head">
-        <div className="module-title">Soneoversikt</div>
-        <span className="module-sub">{flat.length} rom</span>
+        <div className="module-title">{headerLabel}</div>
+        <span className="module-sub" style={{ background: configured ? "var(--moss)" : "var(--ink-mute)", color: "var(--paper)", padding: "2px 6px", letterSpacing: "0.2em" }}>
+          {configured ? "Live" : "Ikke konfigurert"}
+        </span>
       </div>
+      {!configured ? (
+        <div className="camera-offline">Velg kamera i innstillingene</div>
+      ) : multi ? (
+        <div className="camera-grid">
+          {cameraIds.map(id => (
+            <div key={id} className="camera-grid-cell">
+              {errors[id] ? (
+                <div className="camera-grid-offline">Snapshot utilgjengelig</div>
+              ) : (
+                <img
+                  className="camera-grid-img"
+                  src={`/camera/ring/${id}?t=${tick}`}
+                  alt={cameraNames[id] || id}
+                  onError={() => setErrors(e => ({ ...e, [id]: true }))}
+                  onLoad={() => setErrors(e => { const n = { ...e }; delete n[id]; return n; })}
+                />
+              )}
+              <div className="camera-grid-label">{cameraNames[id] || id}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        errors[cameraIds[0]] ? (
+          <div className="camera-offline">Snapshot utilgjengelig</div>
+        ) : (
+          <img
+            className="camera-img"
+            src={`/camera/ring/${cameraIds[0]}?t=${tick}`}
+            alt={headerLabel}
+            onError={() => setErrors({ [cameraIds[0]]: true })}
+            onLoad={() => setErrors({})}
+          />
+        )
+      )}
+    </>
+  );
+}
+
+function CameraModuleSettings({ globalPrefs, onUpdate }) {
+  const [cameras, setCameras] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/camera/ring").then(r => r.ok ? r.json() : null)
+      .then(data => { setCameras(data || []); setLoading(false); })
+      .catch(() => { setCameras(null); setLoading(false); });
+  }, []);
+
+  const selectedIds = globalPrefs.ringCameraIds?.length > 0
+    ? globalPrefs.ringCameraIds
+    : globalPrefs.ringCameraId ? [globalPrefs.ringCameraId] : [];
+
+  const toggleCamera = (cam) => {
+    const id = String(cam.id);
+    const current = selectedIds;
+    const next = current.includes(id) ? current.filter(x => x !== id) : [...current, id];
+    const names = { ...(globalPrefs.ringCameraNames || {}) };
+    if (!current.includes(id)) names[id] = cam.name;
+    onUpdate({ ...globalPrefs, ringCameraIds: next, ringCameraNames: names, ringCameraId: next[0], ringCameraName: next.length === 1 ? cam.name : undefined });
+  };
+
+  return (
+    <div className="module-settings-drawer">
+      <div className="settings-title">Ring kamera</div>
+      {loading && <div className="settings-hint">Henter kameraer…</div>}
+      {!loading && cameras === null && (
+        <div className="settings-hint" style={{ color: "var(--red)" }}>
+          Feil: RING_REFRESH_TOKEN mangler i .env.<br />
+          Kjør <code>node ring-setup.js</code> for å hente token.
+        </div>
+      )}
+      {!loading && cameras?.length === 0 && (
+        <div className="settings-hint">Ingen Ring-kameraer funnet på kontoen.</div>
+      )}
+      {!loading && cameras?.length > 0 && cameras.map(cam => {
+        const id = String(cam.id);
+        const checked = selectedIds.includes(id);
+        return (
+          <label key={id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", cursor: "pointer", fontSize: 13 }}>
+            <input type="checkbox" checked={checked} onChange={() => toggleCamera(cam)}
+              style={{ width: 14, height: 14, accentColor: "var(--moss)", cursor: "pointer" }} />
+            {cam.name}
+          </label>
+        );
+      })}
+      <div className="settings-hint" style={{ marginTop: 8 }}>Snapshot oppdateres hvert minutt. Velg opp til 2 kameraer for side-om-side visning.</div>
+    </div>
+  );
+}
+
+function fmtCalTime(ts) {
+  if (!ts) return "";
+  return new Date(ts).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" });
+}
+function fmtCalDuration(startTs, endTs) {
+  if (!startTs || !endTs) return null;
+  const mins = Math.round((endTs - startTs) / 60000);
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return m ? `${h}t ${m}m` : `${h}t`;
+}
+
+function CalendarModule({ globalPrefs }) {
+  const [events, setEvents] = useState(null);
+  const [loadErr, setLoadErr] = useState(null);
+  const calUrl = globalPrefs.calendarUrl;
+
+  const load = useCallback(async () => {
+    if (!calUrl) return;
+    try {
+      const r = await fetch(`/calendar/today?url=${encodeURIComponent(calUrl)}`);
+      const data = await r.json();
+      if (data.error) { setLoadErr(data.error); setEvents(null); }
+      else { setEvents(data.events); setLoadErr(null); }
+    } catch (e) { setLoadErr(e.message); }
+  }, [calUrl]);
+
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 15 * 60 * 1000);
+    return () => clearInterval(t);
+  }, [load]);
+
+  const count = events?.length ?? 0;
+  return (
+    <>
+      <div className="module-head">
+        <div className="module-title">I dag</div>
+        <span className="module-sub">{events ? (count === 0 ? "Fri dag" : `${count} avtal${count === 1 ? "e" : "er"}`) : "Kalender"}</span>
+      </div>
+      {!calUrl ? (
+        <div className="empty">Lim inn iCloud-lenke i innstillingene</div>
+      ) : loadErr ? (
+        <div className="empty" style={{ color: "var(--red)" }}>{loadErr}</div>
+      ) : !events ? (
+        <div className="empty">Laster…</div>
+      ) : count === 0 ? (
+        <div className="empty" style={{ fontStyle: "italic" }}>Ingen avtaler i dag ✓</div>
+      ) : (
+        <div className="cal-list">
+          {events.map((ev, i) => (
+            <div key={i} className="cal-event">
+              {ev.allDay
+                ? <div className="cal-time allday">Hele dagen</div>
+                : <div className="cal-time">{fmtCalTime(ev.startTs)}</div>}
+              <div className="cal-body">
+                <div className="cal-title">{ev.summary}</div>
+                {ev.location && <div className="cal-location">📍 {ev.location}</div>}
+                {!ev.allDay && ev.endTs && (
+                  <div className="cal-duration">{fmtCalTime(ev.startTs)} – {fmtCalTime(ev.endTs)} · {fmtCalDuration(ev.startTs, ev.endTs)}</div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function CalendarModuleSettings({ globalPrefs, onUpdate }) {
+  const [url, setUrl] = useState(globalPrefs.calendarUrl || "");
+  return (
+    <div className="module-settings-drawer">
+      <div className="settings-title">iCloud kalender-URL</div>
+      <input
+        type="text"
+        placeholder="webcal://p62-caldav.icloud.com/published/2/…"
+        value={url}
+        onChange={e => setUrl(e.target.value)}
+        onBlur={() => onUpdate({ ...globalPrefs, calendarUrl: url.trim() || undefined })}
+        style={{ width: "100%", padding: "6px 8px", background: "var(--paper)", border: "1px solid var(--line)", fontFamily: "monospace", fontSize: 10, color: "var(--ink)" }}
+      />
+      <div className="settings-hint" style={{ marginTop: 8 }}>
+        Åpne Kalender-appen → høyreklikk på kalenderen → Del kalender → Aktiver Offentlig kalender → Kopier lenke
+      </div>
+    </div>
+  );
+}
+
+function ZoneLightControl({ device, onToggle, onSetCapability }) {
+  const vals = device.capabilitiesObj || {};
+  const [isOn, setIsOn] = useState(!!(vals.onoff?.value));
+  const hasDim = (device.capabilities || []).includes("dim");
+  const [localDim, setLocalDim] = useState(vals.dim?.value ?? 1);
+  const [toggling, setToggling] = useState(false);
+
+  // Sync if parent device data refreshes
+  useEffect(() => { setIsOn(!!(device.capabilitiesObj?.onoff?.value)); }, [device.capabilitiesObj?.onoff?.value]);
+
+  const handleToggle = async () => {
+    const next = !isOn;
+    setIsOn(next);
+    setToggling(true);
+    await onToggle(device.id, next);
+    setToggling(false);
+  };
+
+  return (
+    <div className="zpop-device">
+      <div className="zpop-device-row">
+        <div className="zpop-device-name">{device.name}</div>
+        <button className={`toggle ${isOn ? "is-on" : ""}`} onClick={handleToggle} disabled={toggling}>
+          {toggling ? "…" : isOn ? "På" : "Av"}
+        </button>
+      </div>
+      {hasDim && (
+        <div className="control">
+          <input type="range" min={0} max={1} step={0.01} value={localDim}
+            onChange={e => setLocalDim(parseFloat(e.target.value))}
+            onMouseUp={() => onSetCapability(device.id, "dim", localDim)}
+            onTouchEnd={() => onSetCapability(device.id, "dim", localDim)}
+            className="slider slider-dim" />
+          <div className="slider-marks"><span>av</span><span>full</span></div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ZoneTempControl({ device, onSetCapability }) {
+  const vals = device.capabilitiesObj || {};
+  const currentTemp = vals.measure_temperature?.value;
+  const tempCap = vals.target_temperature?.options || {};
+  const tempMin = tempCap.min ?? 5;
+  const tempMax = tempCap.max ?? 30;
+  const tempStep = tempCap.step ?? 0.5;
+  const [localTarget, setLocalTarget] = useState(vals.target_temperature?.value ?? 20);
+
+  return (
+    <div className="zpop-device">
+      <div className="zpop-device-row">
+        <div className="zpop-device-name">{device.name}</div>
+        {currentTemp != null && <span style={{fontSize:12,color:"var(--ink-mute)",fontStyle:"italic"}}>{Number(currentTemp).toFixed(1)}° nå</span>}
+      </div>
+      <div className="zpop-temp-row">
+        <span>Ønsket temperatur</span>
+        <span className="zpop-target">{Number(localTarget).toFixed(1)}°</span>
+      </div>
+      <div className="control">
+        <input type="range" min={tempMin} max={tempMax} step={tempStep} value={localTarget}
+          onChange={e => setLocalTarget(parseFloat(e.target.value))}
+          onMouseUp={() => onSetCapability(device.id, "target_temperature", localTarget)}
+          onTouchEnd={() => onSetCapability(device.id, "target_temperature", localTarget)}
+          className="slider slider-temp" />
+        <div className="slider-marks"><span>{tempMin}°</span><span>{tempMax}°</span></div>
+      </div>
+    </div>
+  );
+}
+
+function ZonePopup({ zone, devices, onClose, onToggle, onSetCapability }) {
+  const lights = devices.filter(d => (d.capabilities || []).includes("onoff") && (d.class === "light" || (d.capabilities || []).includes("dim")));
+  const thermostats = devices.filter(d => (d.capabilities || []).includes("target_temperature"));
+
+  return (
+    <div className="zone-popup-backdrop" onClick={onClose}>
+      <div className="zone-popup" onClick={e => e.stopPropagation()}>
+        <div className="zone-popup-head">
+          <div className="zone-popup-title">{zone.name}</div>
+          <button className="icon-btn" onClick={onClose}>✕</button>
+        </div>
+        {lights.length > 0 && (
+          <div className="zone-popup-section">
+            <div className="zone-popup-section-label">Lys</div>
+            {lights.map(d => <ZoneLightControl key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} />)}
+          </div>
+        )}
+        {thermostats.length > 0 && (
+          <div className="zone-popup-section">
+            <div className="zone-popup-section-label">Temperatur</div>
+            {thermostats.map(d => <ZoneTempControl key={d.id} device={d} onSetCapability={onSetCapability} />)}
+          </div>
+        )}
+        {lights.length === 0 && thermostats.length === 0 && (
+          <div className="empty">Ingen styrbare enheter i dette rommet</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ZonesOverviewModule({ tree, devicesByZone, onToggle, onSetCapability }) {
+  const [selected, setSelected] = useState(null);
+  const flat = [];
+  const collect = (zone) => {
+    const direct = devicesByZone[zone.id] || [];
+    const isContainer = (zone.children || []).length > 0;
+    if (direct.length > 0 && !isContainer) flat.push({ zone, devices: direct });
+    (zone.children || []).forEach(c => collect(c));
+  };
+  tree.forEach(z => collect(z));
+
+  return (
+    <>
+      {selected && (
+        <ZonePopup
+          zone={selected}
+          devices={devicesByZone[selected.id] || []}
+          onClose={() => setSelected(null)}
+          onToggle={onToggle}
+          onSetCapability={onSetCapability}
+        />
+      )}
       {flat.length === 0 ? (
         <div className="empty">Ingen rom</div>
       ) : (
         <div className="zones-overview">
-          {flat.map(({ zone, devices }) => {
+          {flat.map(({ zone, devices }, i) => {
             const lights = devices.filter(d => (d.capabilities || []).includes("onoff") && (d.class === "light" || (d.capabilities || []).includes("dim")));
             const lightsOn = lights.filter(d => d.capabilitiesObj?.onoff?.value).length;
             const temps = devices.filter(d => d.capabilitiesObj?.measure_temperature?.value != null);
             const avgTemp = temps.length ? (temps.reduce((s, d) => s + Number(d.capabilitiesObj.measure_temperature.value), 0) / temps.length).toFixed(1) : null;
-            const alarms = devices.filter(d => d.capabilitiesObj?.alarm_motion?.value || d.capabilitiesObj?.alarm_contact?.value || d.capabilitiesObj?.alarm_smoke?.value).length;
+            const cols = 3;
+            const isLastOdd = flat.length % cols !== 0 && i === flat.length - 1;
+            const remaining = cols - (flat.length % cols);
 
             return (
-              <div key={zone.id} className="zone-tile">
+              <div key={zone.id} className="zone-tile" style={isLastOdd ? { gridColumn: `span ${remaining + 1}`, textAlign: "center", alignItems: "center" } : undefined} onClick={() => setSelected(zone)}>
                 <div className="zone-tile-name">{zone.name}</div>
                 <div className="zone-tile-stats">
                   {lights.length > 0 && (
@@ -1313,12 +1732,6 @@ function ZonesOverviewModule({ tree, devicesByZone }) {
                     <div className="zone-tile-stat">
                       <div className="zone-tile-val">{avgTemp}°</div>
                       <div className="zone-tile-lbl">Temp</div>
-                    </div>
-                  )}
-                  {alarms > 0 && (
-                    <div className="zone-tile-stat">
-                      <div className="zone-tile-val alert">{alarms}</div>
-                      <div className="zone-tile-lbl">Alarm</div>
                     </div>
                   )}
                 </div>
@@ -1352,11 +1765,12 @@ function SceneButton({ flow, onRun }) {
 }
 
 // ==================== MODULE FRAME (drag/drop wrapper) ====================
-function ModuleFrame({ module, idx, isEdit, onMove, onRemove, onToggleSettings, settingsOpen, onDragStart, onDragOver, onDrop, isDragging, isDropTarget, children }) {
+function ModuleFrame({ module, idx, isEdit, onMove, onSetCol, onRemove, onToggleSettings, settingsOpen, onDragStart, onDragOver, onDrop, isDragging, isDropTarget, style, children }) {
   const span = module.span || MODULE_TYPES[module.type]?.defaultSpan || 1;
   return (
     <div
       className={`module span-${span} ${isDragging ? "dragging" : ""} ${isDropTarget ? "drop-target" : ""} ${settingsOpen ? "settings-open" : ""}`}
+      style={style}
       draggable={isEdit}
       onDragStart={(e) => onDragStart(e, idx)}
       onDragOver={(e) => onDragOver(e, idx)}
@@ -1365,8 +1779,10 @@ function ModuleFrame({ module, idx, isEdit, onMove, onRemove, onToggleSettings, 
     >
       {isEdit && (
         <div className="module-edit-controls">
+          <button className="edit-btn" onClick={() => onSetCol(idx, -1)} title="Flytt kolonne venstre">←</button>
           <button className="edit-btn" onClick={() => onMove(idx, -1)} title="Flytt opp">↑</button>
           <button className="edit-btn" onClick={() => onMove(idx, +1)} title="Flytt ned">↓</button>
+          <button className="edit-btn" onClick={() => onSetCol(idx, +1)} title="Flytt kolonne høyre">→</button>
           <button className="edit-btn" onClick={() => onToggleSettings(idx)} title="Innstillinger">⚙</button>
           <button className="edit-btn danger" onClick={() => onRemove(idx)} title="Fjern">×</button>
         </div>
@@ -1399,7 +1815,7 @@ function MasonryGrid({ modules, renderContent }) {
           return <div key={seg.mod.id} className="module">{renderContent(seg.mod)}</div>;
         }
         const cols = [[], [], []];
-        seg.mods.forEach((m, i) => cols[i % 3].push(m));
+        seg.mods.forEach((m, i) => cols[m.col ?? i % 3].push(m));
         return (
           <div key={`row-${si}`} className="home-masonry-row">
             {cols.filter(c => c.length > 0).map((colMods, ci) => (
@@ -1415,10 +1831,13 @@ function MasonryGrid({ modules, renderContent }) {
 }
 
 // ==================== HOME VIEW ====================
-function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPrefs, onUpdateGlobalPrefs, onSetCapability, onToggle, onUpdatePrefs, onRunFlow }) {
-  const [isEdit, setIsEdit] = useState(false);
+function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPrefs, onUpdateGlobalPrefs, onSetCapability, onToggle, onUpdatePrefs, onRunFlow, isEdit }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [settingsForIdx, setSettingsForIdx] = useState(null);
+
+  useEffect(() => {
+    if (!isEdit) { setSettingsForIdx(null); setPickerOpen(false); }
+  }, [isEdit]);
   const [draggingIdx, setDraggingIdx] = useState(null);
   const [dropTargetIdx, setDropTargetIdx] = useState(null);
 
@@ -1439,6 +1858,14 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
     if (newIdx < 0 || newIdx >= modules.length) return;
     const next = [...modules];
     [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+    updateModules(next);
+  };
+
+  const handleSetCol = (idx, dir) => {
+    const mod = modules[idx];
+    const current = mod.col ?? idx % 3;
+    const next = [...modules];
+    next[idx] = { ...mod, col: (current + dir + 3) % 3 };
     updateModules(next);
   };
 
@@ -1486,12 +1913,14 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
   const renderModuleContent = (mod) => {
     switch (mod.type) {
       case "hanweather": return <HanWeatherModule devices={devices} zones={zones} globalPrefs={globalPrefs} />;
+      case "camera": return <CameraModule globalPrefs={globalPrefs} />;
+      case "calendar": return <CalendarModule globalPrefs={globalPrefs} />;
       case "han": return <HanModule devices={devices} prefs={prefs} globalPrefs={globalPrefs} />;
       case "weather": return <WeatherModule devices={devices} zones={zones} globalPrefs={globalPrefs} />;
       case "transit": return <TransitModule />;
       case "flows": return <FlowsModule flows={flows} globalPrefs={globalPrefs} onRunFlow={onRunFlow} />;
       case "favorites": return <FavoritesModule devices={devices} globalPrefs={globalPrefs} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />;
-      case "zones": return <ZonesOverviewModule tree={tree} devicesByZone={devicesByZone} />;
+      case "zones": return <ZonesOverviewModule tree={tree} devicesByZone={devicesByZone} onToggle={onToggle} onSetCapability={onSetCapability} />;
       default: return <div className="empty">Ukjent modul</div>;
     }
   };
@@ -1499,6 +1928,8 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
   const renderModuleSettings = (mod) => {
     switch (mod.type) {
       case "hanweather": return <HanWeatherModuleSettings devices={devices} zones={zones} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
+      case "camera": return <CameraModuleSettings globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
+      case "calendar": return <CalendarModuleSettings globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "han": return <HanModuleSettings devices={devices} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "weather": return <WeatherModuleSettings devices={devices} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "flows": return <FlowsModuleSettings flows={flows} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
@@ -1513,40 +1944,40 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
 
   return (
     <>
-      <div className="home-toolbar">
-        <div className="home-toolbar-info">{modules.length} moduler · {isEdit ? "rediger-modus aktiv" : "trykk Rediger for å endre"}</div>
-        <div className="edit-actions">
-          {isEdit && availableTypes.length > 0 && (
-            <button className="pill-btn terracotta" onClick={() => setPickerOpen(true)}>+ Legg til</button>
-          )}
-          <button className={`pill-btn ${isEdit ? "primary" : ""}`} onClick={() => { setIsEdit(!isEdit); setSettingsForIdx(null); }}>
-            {isEdit ? "Ferdig" : "Rediger"}
-          </button>
+      {isEdit && availableTypes.length > 0 && (
+        <div style={{ display: "flex", justifyContent: "flex-end", paddingBottom: 10, flexShrink: 0 }}>
+          <button className="pill-btn terracotta" onClick={() => setPickerOpen(true)}>+ Legg til</button>
         </div>
-      </div>
+      )}
 
       {isEdit ? (
         <div className="home-grid edit-mode">
           {modules.length === 0 && (
             <div className="empty" style={{ gridColumn: "1/-1" }}>Ingen moduler. Trykk Rediger og legg til noen.</div>
           )}
-          {modules.map((mod, idx) => (
-            <ModuleFrame
-              key={mod.id} module={mod} idx={idx}
-              isEdit={true}
-              onMove={handleMove}
-              onRemove={handleRemove}
-              onToggleSettings={handleToggleSettings}
-              settingsOpen={settingsForIdx === idx}
-              onDragStart={handleDragStart}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              isDragging={draggingIdx === idx}
-              isDropTarget={dropTargetIdx === idx && draggingIdx !== idx}
-            >
-              {renderModuleContent(mod)}
-            </ModuleFrame>
-          ))}
+          {modules.map((mod, idx) => {
+            const span = mod.span || MODULE_TYPES[mod.type]?.defaultSpan || 1;
+            const editStyle = span === 1 ? { gridColumn: (mod.col ?? idx % 3) + 1 } : undefined;
+            return (
+              <ModuleFrame
+                key={mod.id} module={mod} idx={idx}
+                isEdit={true}
+                onMove={handleMove}
+                onSetCol={handleSetCol}
+                onRemove={handleRemove}
+                onToggleSettings={handleToggleSettings}
+                settingsOpen={settingsForIdx === idx}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                isDragging={draggingIdx === idx}
+                isDropTarget={dropTargetIdx === idx && draggingIdx !== idx}
+                style={editStyle}
+              >
+                {renderModuleContent(mod)}
+              </ModuleFrame>
+            );
+          })}
         </div>
       ) : (
         <MasonryGrid modules={modules} renderContent={renderModuleContent} />
@@ -1932,9 +2363,51 @@ function Dashboard({ homeyName, onLogout }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState("hjem");
+  const [isEditHome, setIsEditHome] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(null);
   const [events, setEvents] = useState([]);
   const previousDevicesRef = useRef({});
+
+  const [doorbellAlert, setDoorbellAlert] = useState(null);
+  const [doorbellCountdown, setDoorbellCountdown] = useState(60);
+  const [doorbellTick, setDoorbellTick] = useState(0);
+  const [doorbellImgError, setDoorbellImgError] = useState(false);
+  const lastSeenDingTs = useRef(0);
+
+  useEffect(() => {
+    const poll = setInterval(async () => {
+      try {
+        const r = await fetch("/camera/ring/latest-ding");
+        if (!r.ok) return;
+        const data = await r.json();
+        if (data.ding && data.timestamp > lastSeenDingTs.current) {
+          lastSeenDingTs.current = data.timestamp;
+          setDoorbellAlert(data);
+          setDoorbellCountdown(60);
+          setDoorbellTick(0);
+          setDoorbellImgError(false);
+        }
+      } catch {}
+    }, 2000);
+    return () => clearInterval(poll);
+  }, []);
+
+  useEffect(() => {
+    if (!doorbellAlert) return;
+    const timer = setInterval(() => {
+      setDoorbellCountdown(n => {
+        if (n <= 1) { setDoorbellAlert(null); return 60; }
+        return n - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [doorbellAlert]);
+
+  useEffect(() => {
+    if (!doorbellAlert) return;
+    const t = setInterval(() => { setDoorbellTick(n => n + 1); setDoorbellImgError(false); }, 5000);
+    return () => clearInterval(t);
+  }, [doorbellAlert]);
 
   // Sammenlign tidligere og nye enhets-tilstander, og oppdager hendelser
   const detectEvents = useCallback((newDevices) => {
@@ -2090,23 +2563,42 @@ function Dashboard({ homeyName, onLogout }) {
           <div className="brand-mark">Hjem<em>et</em></div>
           <div className="brand-tag">{lastRefresh ? lastRefresh.toLocaleDateString("no-NO", { weekday: "long", day: "numeric", month: "long" }) : "Laster…"}</div>
         </div>
-        <div className="meta">
-          <div className="meta-line"><span className="pulse"></span> {homeyName || "Synkronisert"}</div>
-          <div>{devices.length} enheter · {flows.length} flows</div>
-        </div>
-        <div className="actions">
-          <button className={`icon-btn ${loading ? "spinning" : ""}`} onClick={load} disabled={loading} title="Oppdater">↻</button>
-          <button className="icon-btn" onClick={handleLogout} title="Logg ut">✕</button>
+        <ClockDisplay />
+        <div className="masthead-right">
+          <div className="meta">
+            <div className="meta-line"><span className="pulse"></span> {homeyName || "Synkronisert"}</div>
+            <div>{devices.length} enheter · {flows.length} flows</div>
+          </div>
+          <div className="actions">
+            <button className={`icon-btn ${loading ? "spinning" : ""}`} onClick={load} disabled={loading} title="Oppdater">↻</button>
+            <button className="icon-btn" onClick={handleLogout} title="Logg ut">✕</button>
+          </div>
         </div>
       </header>
 
-      <nav className="tabs">
-        {tabs.map(t => (
-          <button key={t.key} className={`tab ${tab === t.key ? "active" : ""}`} onClick={() => setTab(t.key)}>
-            {t.icon && <em>{t.icon}</em>}{t.label}
-          </button>
-        ))}
-      </nav>
+      <div className="tabs-bar">
+        <nav className="tabs">
+          {tabs.filter(t => t.icon).map(t => (
+            <button key={t.key} className={`tab ${tab === t.key ? "active" : ""}`} onClick={() => { setTab(t.key); setIsEditHome(false); }}>
+              <em>{t.icon}</em>{t.label}
+            </button>
+          ))}
+        </nav>
+        <div className="tabs-right">
+          <nav className="tabs">
+            {tabs.filter(t => !t.icon).map(t => (
+              <button key={t.key} className={`tab ${tab === t.key ? "active" : ""}`} onClick={() => { setTab(t.key); setIsEditHome(false); }}>
+                {t.label}
+              </button>
+            ))}
+          </nav>
+          {tab === "hjem" && (
+            <button className={`pill-btn ${isEditHome ? "primary" : ""}`} onClick={() => setIsEditHome(e => !e)}>
+              {isEditHome ? "Ferdig" : "Rediger"}
+            </button>
+          )}
+        </div>
+      </div>
 
       <div className="tab-content">
         {error && <div className="error-banner">{error}</div>}
@@ -2117,6 +2609,7 @@ function Dashboard({ homeyName, onLogout }) {
             prefs={prefs} globalPrefs={globalPrefs} onUpdateGlobalPrefs={handleUpdateGlobalPrefs}
             onSetCapability={handleSetCapability} onToggle={handleToggle}
             onUpdatePrefs={handleUpdatePrefs} onRunFlow={handleRunFlow}
+            isEdit={isEditHome}
           />
         )}
         {tab === "styring" && (
@@ -2149,8 +2642,51 @@ function Dashboard({ homeyName, onLogout }) {
           </div>
         )}
       </div>
+
+      {doorbellAlert && (
+        <div className="doorbell-overlay" onClick={() => setDoorbellAlert(null)}>
+          <div className="doorbell-panel" onClick={e => e.stopPropagation()}>
+            <div className="doorbell-head">
+              <div>
+                <div className="doorbell-title">Noen <em>ringer på!</em></div>
+                <div className="doorbell-sub">{doorbellAlert.cameraName}</div>
+              </div>
+              <button className="config-close" onClick={() => setDoorbellAlert(null)}>Lukk</button>
+            </div>
+            <div className="doorbell-progress">
+              <div className="doorbell-progress-bar" style={{ width: `${(doorbellCountdown / 60) * 100}%` }} />
+            </div>
+            {doorbellImgError ? (
+              <div className="doorbell-img-offline">Snapshot utilgjengelig</div>
+            ) : (
+              <img
+                className="doorbell-img"
+                src={`/camera/ring/${doorbellAlert.cameraId}?t=${doorbellTick}`}
+                alt={doorbellAlert.cameraName}
+                onError={() => setDoorbellImgError(true)}
+                onLoad={() => setDoorbellImgError(false)}
+              />
+            )}
+            <div className="doorbell-footer">
+              <div className="doorbell-countdown">Lukkes om <strong>{doorbellCountdown}s</strong></div>
+              <button className="pill-btn" onClick={() => setDoorbellAlert(null)}>Lukk nå</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
+}
+
+function ClockDisplay() {
+  const [time, setTime] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const h = String(time.getHours()).padStart(2, "0");
+  const m = String(time.getMinutes()).padStart(2, "0");
+  return <div className="masthead-clock">{h}<em>:{m}</em></div>;
 }
 
 function App() {

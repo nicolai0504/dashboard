@@ -29,6 +29,163 @@ const PORT = parseInt(process.env.PORT || "3000", 10);
 const REDIRECT_URI = process.env.REDIRECT_URI || `http://localhost:${PORT}/auth/callback`;
 const TOKEN_FILE = path.join(__dirname, ".homey-tokens.json");
 
+// ---- Ring API (lazy-init) ----
+let _ringApi = null;
+async function getRingApi() {
+  if (_ringApi) return _ringApi;
+  const token = process.env.RING_REFRESH_TOKEN;
+  if (!token) throw new Error("RING_REFRESH_TOKEN ikke satt i .env");
+  const { RingApi } = await import("ring-client-api");
+  _ringApi = new RingApi({ refreshToken: token, controlCenterDisplayName: "Homey Dashboard" });
+  _ringApi.onRefreshTokenUpdated.subscribe(({ newRefreshToken }) => {
+    process.env.RING_REFRESH_TOKEN = newRefreshToken;
+    try {
+      const envPath = path.join(__dirname, ".env");
+      const current = fs.readFileSync(envPath, "utf8");
+      const updated = current.replace(/^RING_REFRESH_TOKEN=.*/m, `RING_REFRESH_TOKEN=${newRefreshToken}`);
+      fs.writeFileSync(envPath, updated.includes("RING_REFRESH_TOKEN") ? updated : current + `\nRING_REFRESH_TOKEN=${newRefreshToken}`);
+    } catch {}
+  });
+  return _ringApi;
+}
+async function getRingCameras() {
+  const api = await getRingApi();
+  return api.getCameras();
+}
+
+// ---- iCalendar (.ics) parser ----
+function parseICS(text) {
+  const events = [];
+  const unfolded = text.replace(/\r?\n[ \t]/g, "");
+  const blocks = unfolded.split("BEGIN:VEVENT");
+  for (let i = 1; i < blocks.length; i++) {
+    const block = blocks[i];
+    const get = (key) => {
+      const m = block.match(new RegExp(`^${key}(?:;[^:]*)?:(.+)$`, "m"));
+      return m ? m[1].trim().replace(/\\n/gi, " ").replace(/\\,/g, ",").replace(/\\;/g, ";") : null;
+    };
+    const summary = get("SUMMARY");
+    if (!summary) continue;
+    events.push({
+      summary,
+      dtstart: get("DTSTART"),
+      dtend:   get("DTEND"),
+      location: get("LOCATION"),
+      allDay: /^DTSTART;VALUE=DATE:/m.test(block),
+    });
+  }
+  return events;
+}
+
+function parseDTDate(str, allDay) {
+  if (!str) return null;
+  if (allDay || /^\d{8}$/.test(str)) {
+    return { date: str.slice(0, 8), allDay: true, ts: null };
+  }
+  const m = str.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z?)$/);
+  if (!m) return null;
+  const [, y, mo, d, h, mi, s, z] = m;
+  const ts = new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}${z || ""}`).getTime();
+  let date = `${y}${mo}${d}`;
+  if (z) {
+    try {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Oslo", year: "numeric", month: "2-digit", day: "2-digit",
+      }).formatToParts(new Date(ts));
+      date = parts.find(p => p.type === "year").value +
+             parts.find(p => p.type === "month").value +
+             parts.find(p => p.type === "day").value;
+    } catch {}
+  }
+  return { date, allDay: false, ts };
+}
+
+function todayKey() {
+  const n = new Date();
+  return `${n.getFullYear()}${String(n.getMonth() + 1).padStart(2, "0")}${String(n.getDate()).padStart(2, "0")}`;
+}
+
+const calCache = new Map(); // url → { data, expires }
+
+// ---- Ring doorbell ding listener ----
+let lastDing = null;
+let dingListenersSetup = false;
+const snapshotCache = {}; // { [cameraId]: { buf, ts } }
+
+async function setupDingListeners() {
+  if (dingListenersSetup) return;
+  dingListenersSetup = true;
+
+  // Only alert on dings that arrive after this moment
+  const startedAt = Date.now();
+
+  try {
+    const cameras = await getRingCameras();
+    if (!cameras.length) return;
+
+    const seenDingIds = new Set();
+    const restClient = cameras[0].restClient;
+
+    const handleDing = (cam) => {
+      lastDing = { cameraId: String(cam.id), cameraName: cam.name, timestamp: Date.now() };
+      console.log(`🔔 Ringeklokke: ${cam.name}`);
+    };
+
+    // FCM push — instant notification when it works
+    cameras.forEach(cam => {
+      if (typeof cam.onDoorbellPressed?.subscribe === "function") {
+        cam.onDoorbellPressed.subscribe(() => {
+          seenDingIds.add(`fcm-${Date.now()}`); // mark so polling doesn't double-fire
+          handleDing(cam);
+        });
+      }
+    });
+
+    // Poll /dings/active every 2s as fallback (Ring REST API lags ~15-20s behind push)
+    setInterval(async () => {
+      try {
+        const active = await restClient.request({ url: "https://api.ring.com/clients_api/dings/active" });
+        for (const ding of active) {
+          if (ding.kind !== "ding") continue;
+          if (seenDingIds.has(ding.id)) continue;
+          seenDingIds.add(ding.id);
+          const cam = cameras.find(c => c.id === ding.doorbot_id);
+          if (!cam) continue;
+          handleDing(cam);
+        }
+        if (seenDingIds.size > 200) seenDingIds.clear();
+      } catch {}
+    }, 2000);
+
+    // Pre-cache snapshots — retry every 5s until all cameras have a cached image, then every 30s
+    const refreshSnapshots = async () => {
+      for (const cam of cameras) {
+        try {
+          const buf = await Promise.race([
+            cam.getSnapshot(),
+            new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 8000)),
+          ]);
+          snapshotCache[cam.id] = { buf, ts: Date.now() };
+        } catch {}
+      }
+    };
+
+    const warmUp = setInterval(async () => {
+      await refreshSnapshots();
+      if (cameras.every(c => snapshotCache[c.id])) {
+        clearInterval(warmUp);
+        setInterval(refreshSnapshots, 30_000);
+      }
+    }, 5000);
+    refreshSnapshots();
+
+    console.log(`Ring: poller ${cameras.length} kamera(er) for dørklokke-hendelser`);
+  } catch (e) {
+    console.warn("Ring ding-lytter:", e.message);
+    dingListenersSetup = false;
+  }
+}
+
 if (!CLIENT_ID || !CLIENT_SECRET) {
   console.error("\n❌ Mangler HOMEY_CLIENT_ID og/eller HOMEY_CLIENT_SECRET");
   console.error("   Opprett en API-klient på https://tools.developer.homey.app");
@@ -292,6 +449,102 @@ const server = http.createServer(async (req, res) => {
         state._wxExpiry = Date.now() + 30 * 60 * 1000;
       }
       return send(res, 200, state._wxCache);
+    }
+
+    // iCal kalender
+    if (p === "/calendar/today") {
+      const rawUrl = url.searchParams.get("url");
+      if (!rawUrl) return send(res, 200, { events: [] });
+      const calUrl = rawUrl.replace(/^webcal:\/\//i, "https://");
+      try {
+        const u = new URL(calUrl);
+        if (!u.hostname.endsWith(".icloud.com"))
+          return send(res, 400, { error: "Kun iCloud-kalendere støttes" });
+      } catch {
+        return send(res, 400, { error: "Ugyldig URL" });
+      }
+      const cached = calCache.get(calUrl);
+      if (cached && Date.now() < cached.expires) return send(res, 200, cached.data);
+      const cr = await fetch(calUrl, { headers: { "User-Agent": "homey-dashboard/1.0" } });
+      if (!cr.ok) throw new Error(`Kalender: ${cr.status}`);
+      const today = todayKey();
+      const allEvents = parseICS(await cr.text());
+      const events = allEvents
+        .map(e => ({ ...e, sp: parseDTDate(e.dtstart, e.allDay) }))
+        .filter(e => e.sp?.date === today)
+        .sort((a, b) => {
+          if (a.allDay && !b.allDay) return -1;
+          if (!a.allDay && b.allDay) return 1;
+          return (a.sp.ts || 0) - (b.sp.ts || 0);
+        })
+        .map(e => ({
+          summary: e.summary,
+          location: e.location || null,
+          allDay: e.allDay,
+          startTs: e.sp.ts,
+          endTs: parseDTDate(e.dtend, e.allDay)?.ts || null,
+        }));
+      const result = { events };
+      calCache.set(calUrl, { data: result, expires: Date.now() + 2 * 60 * 1000 });
+      return send(res, 200, result);
+    }
+
+    // Ring kameraer
+    if (p === "/camera/ring") {
+      const cameras = await getRingCameras();
+      if (process.env.RING_REFRESH_TOKEN) setupDingListeners().catch(() => {});
+      return send(res, 200, cameras.map(c => ({ id: c.id, name: c.name, deviceType: c.deviceType })));
+    }
+    if (p === "/camera/ring/latest-ding") {
+      if (process.env.RING_REFRESH_TOKEN) setupDingListeners().catch(() => {});
+      const TTL = 70 * 1000;
+      if (lastDing && Date.now() - lastDing.timestamp < TTL) {
+        return send(res, 200, { ding: true, ...lastDing });
+      }
+      return send(res, 200, { ding: false });
+    }
+    if (p === "/camera/ring/test-ding") {
+      const cameras = await getRingCameras();
+      const doorbell = cameras[0];
+      lastDing = { cameraId: doorbell ? String(doorbell.id) : "0", cameraName: doorbell ? doorbell.name : "Test-klokke", timestamp: Date.now() };
+      console.log("🧪 Test-ding trigget manuelt");
+      return send(res, 200, { ok: true });
+    }
+    if (p.startsWith("/camera/ring/")) {
+      const id = parseInt(p.slice("/camera/ring/".length).split("/")[0]);
+      const cameras = await getRingCameras();
+      const cam = cameras.find(c => c.id === id);
+      if (!cam) return send(res, 404, { error: "Kamera ikke funnet" });
+      // Serve cached snapshot immediately if available (camera can't snapshot while streaming)
+      const cached = snapshotCache[id];
+      if (cached) {
+        res.writeHead(200, { "Content-Type": "image/jpeg", "Cache-Control": "no-store" });
+        return res.end(cached.buf);
+      }
+      // No cache yet — try live fetch with timeout
+      const snapshot = await Promise.race([
+        cam.getSnapshot(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
+      ]);
+      snapshotCache[id] = { buf: snapshot, ts: Date.now() };
+      res.writeHead(200, { "Content-Type": "image/jpeg", "Cache-Control": "no-store" });
+      return res.end(snapshot);
+    }
+
+    // Kamera snapshot-proxy (binary, ikke JSON)
+    if (p.startsWith("/camera/snapshot/")) {
+      if (!state.tokens) return send(res, 401, { error: "Ikke autentisert" });
+      if (!state.sessionToken || !state.homeyUrl) await setupHomeySession();
+      const imageId = p.slice("/camera/snapshot/".length).split("?")[0];
+      const doFetch = async () => fetch(`${state.homeyUrl}/api/manager/images/${imageId}`, {
+        headers: { Authorization: `Bearer ${state.sessionToken}` },
+      });
+      let r = await doFetch();
+      if (r.status === 401) { await setupHomeySession(); r = await doFetch(); }
+      if (!r.ok) throw new Error(`Camera snapshot: ${r.status}`);
+      const ct = r.headers.get("content-type") || "image/jpeg";
+      res.writeHead(200, { "Content-Type": ct, "Cache-Control": "no-store" });
+      return res.end(Buffer.from(await r.arrayBuffer()));
     }
 
     // Proxy til Homey API
