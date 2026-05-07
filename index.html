@@ -278,6 +278,10 @@
   .col-title { font-family: var(--font-display); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; line-height: 1; font-variation-settings: 'opsz' 144; }
   .col-title em { font-style: italic; font-weight: 300; color: var(--terracotta); margin-right: 4px; }
   .col-subtitle { font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.18em; white-space: nowrap; }
+  .col-tabs { display: flex; gap: 0; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .col-tab { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 5px 12px; font-family: var(--font-body); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-mute); cursor: pointer; margin-bottom: -1px; transition: color .15s; }
+  .col-tab:hover { color: var(--ink); }
+  .col-tab.active { color: var(--ink); border-bottom-color: var(--terracotta); font-weight: 600; }
 
   /* ZONES & GRID */
   .zone { margin-bottom: 12px; }
@@ -296,6 +300,7 @@
   /* CARDS */
   .card { background: var(--paper); padding: 5px 7px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; transition: background .2s; position: relative; }
   .card:hover { background: var(--paper-deep); }
+  .card.toggling { opacity: 0.6; pointer-events: none; }
   .card.off { opacity: 0.55; }
   .card.expanded { background: var(--paper-deep); }
   .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
@@ -616,7 +621,6 @@ function DeviceCard({ device, onToggle, onSetCapability, prefs, onUpdatePrefs, c
   const devicePrefs = prefs[device.id] || {};
   const visibleMetrics = devicePrefs.metrics || allMetricCaps;
 
-  const [expanded, setExpanded] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [localDim, setLocalDim] = useState(vals.dim?.value ?? 0);
   const [localTargetTemp, setLocalTargetTemp] = useState(vals.target_temperature?.value ?? 20);
@@ -639,10 +643,6 @@ function DeviceCard({ device, onToggle, onSetCapability, prefs, onUpdatePrefs, c
   const handleDimRelease = () => onSetCapability(device.id, "dim", localDim);
   const handleTempChange = (e) => { lastInteract.current = Date.now(); setLocalTargetTemp(parseFloat(e.target.value)); };
   const handleTempRelease = () => onSetCapability(device.id, "target_temperature", localTargetTemp);
-  const handleMetricToggle = (capName) => {
-    const next = visibleMetrics.includes(capName) ? visibleMetrics.filter(c => c !== capName) : [...visibleMetrics, capName];
-    onUpdatePrefs(device.id, { ...devicePrefs, metrics: next });
-  };
 
   const tempCap = vals.target_temperature?.options || {};
   const tempMin = tempCap.min ?? 5;
@@ -667,8 +667,8 @@ function DeviceCard({ device, onToggle, onSetCapability, prefs, onUpdatePrefs, c
 
   return (
     <article
-      className={`card ${isOn === false ? "off" : ""} ${expanded ? "expanded" : ""} ${isFeatured ? "featured" : ""}`}
-      onClick={() => setExpanded(e => !e)}
+      className={`card ${isOn === false ? "off" : ""} ${toggling ? "toggling" : ""} ${isFeatured ? "featured" : ""}`}
+      onClick={hasOnoff ? handleToggle : undefined}
     >
       <div className="card-head">
         <div>
@@ -696,7 +696,6 @@ function DeviceCard({ device, onToggle, onSetCapability, prefs, onUpdatePrefs, c
 
       {hasDim && !hasTargetTemp && (
         <>
-          <div className="reading"><div className="reading-value">{Math.round(localDim * 100)}<em>%</em></div></div>
           <div className="control" onClick={stopProp}>
             <input type="range" min={0} max={1} step={0.01} value={localDim}
               onChange={handleDimChange} onMouseUp={handleDimRelease} onTouchEnd={handleDimRelease} onKeyUp={handleDimRelease} className="slider slider-dim" />
@@ -722,29 +721,6 @@ function DeviceCard({ device, onToggle, onSetCapability, prefs, onUpdatePrefs, c
         </div>
       )}
 
-      {hasOnoff && (
-        <button className={`toggle ${isOn ? "is-on" : ""}`} onClick={handleToggle} disabled={toggling}>
-          {toggling ? "…" : isOn ? "Slå av" : "Slå på"}
-        </button>
-      )}
-
-      {expanded && allMetricCaps.length > 0 && (
-        <div className="settings" onClick={stopProp}>
-          <div className="settings-title">Vis målinger</div>
-          <div className="settings-checks">
-            {allMetricCaps.map(capName => {
-              const def = METRIC_DEFS[capName];
-              return (
-                <label key={capName} className="settings-check">
-                  <input type="checkbox" checked={visibleMetrics.includes(capName)} onChange={() => handleMetricToggle(capName)} />
-                  <span>{def.label}</span>
-                </label>
-              );
-            })}
-          </div>
-          <div className="settings-hint">Klikk på kortet for å lukke</div>
-        </div>
-      )}
     </article>
   );
 }
@@ -833,11 +809,14 @@ function FloorColumn({ floor, idx, devicesByZone, onToggle, onSetCapability, pre
   termostater.forEach(d => assigned.add(d.id));
   const annet = allDevices.filter(d => !assigned.has(d.id));
 
-  const groups = [
-    { key: "lys", label: "Lys", devices: lys },
-    { key: "termostat", label: "Termostater", devices: termostater },
-    { key: "annet", label: "Annet", devices: annet },
-  ].filter(g => g.devices.length > 0);
+  const tabs = [
+    { key: "lys",  label: "Lys",  devices: lys },
+    { key: "temp", label: "Temp", devices: termostater },
+    { key: "annet",label: "Annet",devices: annet },
+  ].filter(t => t.devices.length > 0);
+
+  const [activeTab, setActiveTab] = useState(tabs[0]?.key || "lys");
+  const activeDevices = tabs.find(t => t.key === activeTab)?.devices || tabs[0]?.devices || [];
 
   return (
     <div className="col">
@@ -845,16 +824,20 @@ function FloorColumn({ floor, idx, devicesByZone, onToggle, onSetCapability, pre
         <h2 className="col-title"><em>{num}.</em>{floor.name}</h2>
         <div className="col-subtitle">{allDevices.length} enheter</div>
       </div>
-      {groups.map(grp => (
-        <div key={grp.key} className="device-group">
-          <div className="device-group-label">{grp.label}</div>
-          <div className="grid">
-            {grp.devices.map(d => (
-              <DeviceCard key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
-            ))}
-          </div>
+      {tabs.length > 1 && (
+        <div className="col-tabs">
+          {tabs.map(t => (
+            <button key={t.key} className={`col-tab ${activeTab === t.key ? "active" : ""}`} onClick={() => setActiveTab(t.key)}>
+              {t.label}
+            </button>
+          ))}
         </div>
-      ))}
+      )}
+      <div className="grid">
+        {activeDevices.map(d => (
+          <DeviceCard key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />
+        ))}
+      </div>
     </div>
   );
 }
