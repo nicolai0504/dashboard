@@ -280,6 +280,20 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, json.data || {});
     }
 
+    // Værmelding fra MET Norway (Yr.no)
+    if (p === "/weather/forecast") {
+      if (!state._wxCache || Date.now() > state._wxExpiry) {
+        const r = await fetch(
+          "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.924&lon=10.648",
+          { headers: { "User-Agent": "homey-dashboard/1.0 nicolai.eeg-larsen@brivo.no" } }
+        );
+        if (!r.ok) throw new Error(`MET API: ${r.status}`);
+        state._wxCache = await r.json();
+        state._wxExpiry = Date.now() + 30 * 60 * 1000;
+      }
+      return send(res, 200, state._wxCache);
+    }
+
     // Proxy til Homey API
     if (p.startsWith("/homey/")) {
       if (!state.tokens) return send(res, 401, { error: "Ikke autentisert" });
