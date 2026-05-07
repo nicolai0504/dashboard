@@ -8,5 +8,9 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "ring-client-api": "^12.0.0",
+    "sonos": "^1.14.3"
   }
 }

@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
 <title>Hjemmet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,30..100&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
+    color-scheme: light;
     /* Lys & luftig Apple-palett */
     --bg: #fbf9f4;
     --surface: #ffffff;
@@ -110,9 +112,10 @@
   .pill-btn.terracotta { background: var(--terracotta); color: var(--surface); }
 
   .home-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding-bottom: 14px; flex: 1; min-height: 0; overflow-y: auto; align-items: start; grid-auto-flow: row dense; }
-  .home-masonry { display: flex; flex-direction: column; gap: 14px; padding-top: 4px; padding-bottom: 14px; flex: 1; min-height: 0; overflow-y: auto; }
-  .home-masonry-row { display: flex; gap: 14px; align-items: flex-start; }
-  .home-masonry-col { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .home-masonry { display: flex; flex-direction: column; gap: 14px; padding-top: 4px; padding-bottom: 14px; flex: 1; min-height: 0; overflow: hidden; }
+  .home-masonry-row { display: flex; gap: 14px; align-items: stretch; flex: 1; min-height: 0; }
+  .home-masonry-col { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; min-height: 0; }
+  .home-masonry-col > .module:last-child { flex: 1; }
   .module {
     background: var(--surface);
     border: none;
@@ -256,21 +259,19 @@
   .sparkline .area { fill: var(--terracotta); opacity: 0.1; stroke: none; }
 
   /* Combined HAN+Weather module */
-  .han-weather-split { display: flex; gap: 0; margin-top: 4px; }
-  .han-weather-half { flex: 1; }
+  .han-weather-split { display: flex; gap: 0; margin-top: 4px; align-self: stretch; }
+  .han-weather-half { flex: 1; min-width: 0; }
   .han-weather-half + .han-weather-half { border-left: 1px solid var(--line); padding-left: 14px; }
-  .wx-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
-  .wx-icon { font-size: 22px; line-height: 1; flex-shrink: 0; width: 26px; text-align: center; }
-  .wx-details { flex: 1; min-width: 0; }
-  .wx-condition { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--ink-soft); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .wx-temps { display: flex; align-items: baseline; gap: 3px; margin-top: 2px; }
-  .wx-temp { font-family: var(--font-display); font-weight: 400; font-size: 15px; letter-spacing: -0.02em; line-height: 1; }
-  .wx-temp.hi { color: var(--terracotta); font-style: italic; }
-  .wx-temp-sep { font-size: 10px; color: var(--ink-mute); }
-  .wx-precip { font-size: 10px; color: var(--moss); flex-shrink: 0; font-style: italic; }
-  .wx-meta { display: flex; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
-  .wx-meta-item { font-size: 10px; color: var(--ink-mute); }
-  .clothing-inline { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--ink-soft); flex-shrink: 0; max-width: 88px; line-height: 1.35; text-align: right; border-left: 1px solid var(--line); padding-left: 10px; align-self: center; }
+  .wx-blocks { display: flex; flex-direction: row; gap: 20px; padding-top: 8px; border-top: 1px solid var(--line); align-self: stretch; }
+  .wx-block { flex: 1; min-width: 0; background: var(--surface-soft); border-radius: var(--radius-sm); padding: 8px 8px 6px; }
+  .wx-block-time { font-size: 9px; color: var(--ink-mute); margin-bottom: 5px; }
+  .wx-block-icon { font-size: 20px; line-height: 1; margin-bottom: 3px; }
+  .wx-block-condition { font-family: var(--font-display); font-style: italic; font-size: 11px; color: var(--ink-soft); line-height: 1.2; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wx-block-temps { display: flex; align-items: baseline; gap: 2px; margin-bottom: 3px; }
+  .wx-block-lo { font-family: var(--font-display); font-size: 13px; font-weight: 400; letter-spacing: -0.02em; }
+  .wx-block-sep { font-size: 9px; color: var(--ink-mute); }
+  .wx-block-hi { font-family: var(--font-display); font-size: 13px; font-weight: 400; letter-spacing: -0.02em; color: var(--terracotta); font-style: italic; }
+  .wx-block-meta { font-size: 9px; color: var(--ink-mute); display: flex; gap: 4px; flex-wrap: nowrap; white-space: nowrap; overflow: hidden; }
 
   /* Weather module */
   .weather-main { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
@@ -334,9 +335,10 @@
 
   /* Scenes module */
   .scene-list { display: flex; flex-direction: column; gap: 8px; }
-  .scene-btn { background: var(--surface-soft); border: none; border-radius: var(--radius-sm); padding: 12px 16px; text-align: left; cursor: pointer; font-family: var(--font-body); color: var(--ink); transition: all .2s cubic-bezier(.2, .7, .2, 1); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-
+  .scene-btn { width: 100%; background: var(--surface-soft); border: none; border-radius: var(--radius-sm); padding: 12px 16px; text-align: left; cursor: pointer; font-family: var(--font-body); color: var(--ink); transition: all .2s cubic-bezier(.2, .7, .2, 1); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .scene-btn:hover:not(:disabled) { background: var(--surface-deep); }
   .scene-btn.ran { background: var(--moss); color: var(--surface); }
+  .scene-btn.failed { background: rgba(194, 90, 74, 0.12); color: var(--red); }
   .scene-name { font-family: var(--font-display); font-style: italic; font-size: 15px; font-weight: 400; }
   .scene-arrow { font-size: 12px; opacity: 0.4; transition: opacity .2s, transform .2s; }
 
@@ -345,15 +347,18 @@
   .favorites-grid > .card { padding: 14px 16px; border-radius: var(--radius-sm); }
 
   /* Zones overview module */
-  .zones-overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; min-width: 0; }
-  .zone-tile { min-width: 0; background: var(--surface-soft); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; cursor: pointer; transition: background .2s; }
-  .zone-tile-name { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 14px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .zone-tile-stats { display: flex; gap: 10px; flex-wrap: wrap; }
-  .zone-tile-stat { display: flex; flex-direction: column; gap: 1px; }
-  .zone-tile-val { font-family: var(--font-display); font-weight: 400; font-size: 14px; letter-spacing: -0.02em; line-height: 1; }
+  .zones-overview { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .zone-tile { min-width: 0; display: flex; flex-direction: row; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); cursor: pointer; transition: background .15s; border-bottom: 1px solid var(--line); }
+  .zone-tile:last-child { border-bottom: none; }
+  .zone-tile:hover { background: var(--surface-soft); }
+  .zone-tile-name { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 13px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+  .zone-tile-stats { display: flex; gap: 10px; flex-shrink: 0; align-items: center; }
+  .zone-tile-stat { display: flex; align-items: baseline; gap: 1px; }
+  .zone-tile-val { font-family: var(--font-display); font-weight: 400; font-size: 12px; letter-spacing: -0.02em; line-height: 1; color: var(--ink-soft); }
   .zone-tile-val em { font-style: italic; color: var(--moss); }
-  .zone-tile-val.alert { color: var(--red); font-style: italic; }
-  .zone-tile-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-mute); font-weight: 600; }
+  .zone-tile-val.alert { color: var(--red); }
+  .zone-tile-lbl { font-size: 9px; color: var(--ink-mute); }
+  .zone-tile-sep { width: 100%; height: 1px; background: var(--line); margin: 0; }
 
   /* Zone popup */
   .zone-popup-backdrop { position: fixed; inset: 0; background: rgba(29,27,24,0.45); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -526,6 +531,31 @@
   .event-zone { font-size: 9px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.12em; flex-shrink: 0; font-weight: 500; }
 
   .empty { color: var(--ink-mute); padding: 24px; text-align: center; font-size: 12px; font-style: italic; }
+  /* Sonos */
+  .sonos-stations { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+  .sonos-station-btn { background: transparent; border: 2px solid transparent; border-radius: 8px; padding: 2px; font-family: var(--font-body); font-size: 10px; font-weight: 500; color: var(--ink-soft); cursor: pointer; text-align: center; line-height: 1.3; transition: border-color .15s, opacity .15s; }
+  .sonos-station-btn img { display: block; width: 100%; height: auto; border-radius: 6px; }
+  .sonos-station-btn.active { border-color: var(--moss); }
+  .sonos-station-btn:disabled { opacity: 0.35; cursor: default; }
+  .sonos-speakers { display: flex; flex-direction: column; gap: 8px; }
+  .sonos-station-btn.selected { background: var(--moss); color: #fff; border-radius: var(--radius-sm); padding: 8px 6px; }
+  .sonos-speaker-btn { height: 36px; }
+  .sonos-now-playing { font-size: 10px; color: var(--ink-mute); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sonos-controls { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .sonos-vol-wrap { flex: 1; min-width: 0; }
+
+  /* Roborock module */
+  .robo-status { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .robo-icon { font-size: 28px; line-height: 1; }
+  .robo-info { display: flex; flex-direction: column; gap: 2px; }
+  .robo-state { font-family: var(--font-display); font-style: italic; font-size: 17px; letter-spacing: -0.01em; line-height: 1; }
+  .robo-battery { font-size: 11px; color: var(--ink-mute); }
+  .robo-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .robo-btn { width: 100%; padding: 9px 14px; border: none; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .2s; text-align: left; }
+  .robo-btn.primary { background: var(--ink); color: var(--surface); }
+  .robo-btn.secondary { background: var(--surface-soft); color: var(--ink); }
+  .robo-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .robo-btn.active { background: var(--moss); color: #fff; }
 
   .colophon { display: none; }
   .colophon em { font-family: var(--font-display); font-style: italic; font-weight: 300; text-transform: none; letter-spacing: 0; font-size: 11px; color: var(--ink-soft); }
@@ -940,6 +970,122 @@ function FloorColumn({ floor, idx, devicesByZone, onToggle, onSetCapability, pre
 
 // ==================== HOME MODULES ====================
 
+function RoboRockModule({ devices, flows, globalPrefs, onSetCapability, onRunFlow }) {
+  const device = useMemo(() => {
+    if (globalPrefs.roborockDeviceId) return devices.find(d => d.id === globalPrefs.roborockDeviceId);
+    return devices.find(d => d.class === "vacuumcleaner" || (d.capabilities || []).includes("vacuumcleaner_state"));
+  }, [devices, globalPrefs.roborockDeviceId]);
+
+  const [busy, setBusy] = useState(false);
+  const [flowDone, setFlowDone] = useState(false);
+  const [localCleaning, setLocalCleaning] = useState(null);
+
+  const deviceCleaning = device?.capabilitiesObj?.is_cleaning?.value;
+  useEffect(() => { setLocalCleaning(null); }, [deviceCleaning]);
+  const isCleaning = localCleaning !== null ? localCleaning : deviceCleaning;
+  const battery = device?.capabilitiesObj?.measure_battery?.value;
+  const chargingState = device?.capabilitiesObj?.battery_charging_state?.value;
+
+  const CHARGING_LABELS = { charging: "Lader", charged: "Fulladet", discharging: "På batteri" };
+  const stateLabel = isCleaning ? "Vasker" : (CHARGING_LABELS[chargingState] ?? "Klar");
+  const icon = isCleaning ? "🤖" : (chargingState === "charging" ? "⚡" : "🏠");
+
+  const routineFlow = flows.find(f => f.id === globalPrefs.roborockFlowId);
+
+  useEffect(() => {
+    if (device) console.log("Roborock caps:", device.capabilities, "obj:", device.capabilitiesObj);
+  }, [device?.id]);
+
+  const handleClean = async () => {
+    if (!device) return;
+    setBusy(true);
+    try {
+      if (isCleaning) {
+        setLocalCleaning(false);
+        await onSetCapability(device.id, "dock", true);
+      } else {
+        setLocalCleaning(true);
+        await onSetCapability(device.id, "clean_full", true);
+      }
+    } catch(e) { console.error("Roborock feil:", e); }
+    finally { setBusy(false); }
+  };
+
+  const handleRoutine = async () => {
+    if (!routineFlow) return;
+    setBusy(true);
+    try {
+      await onRunFlow(routineFlow.id);
+      setFlowDone(true);
+      setTimeout(() => setFlowDone(false), 2000);
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <>
+      <div className="module-head">
+        <div className="module-title">Støvsuger</div>
+        {battery != null && <span className="module-sub">{Math.round(battery)}%</span>}
+      </div>
+      {!device ? (
+        <div className="empty">Ingen støvsuger funnet – velg enhet i innstillinger</div>
+      ) : (
+        <>
+          <div className="robo-status">
+            <div className="robo-icon">{icon}</div>
+            <div className="robo-info">
+              <div className="robo-state">{stateLabel}</div>
+              {battery != null && (
+                <div className="robo-battery">
+                  {battery < 20 ? "🔴" : battery < 50 ? "🟡" : "🟢"} {Math.round(battery)}% batteri
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="robo-actions">
+            <button
+              className={`robo-btn primary ${isCleaning ? "active" : ""}`}
+              onClick={handleClean}
+              disabled={busy}
+            >
+              {isCleaning ? "⏹ Send til base" : "▶ Start full vask"}
+            </button>
+            {routineFlow && (
+              <button
+                className={`robo-btn secondary ${flowDone ? "active" : ""}`}
+                onClick={handleRoutine}
+                disabled={busy}
+              >
+                {flowDone ? "✓ Startet" : `▶ ${routineFlow.name}`}
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+function RoboRockModuleSettings({ devices, flows, globalPrefs, onUpdate }) {
+  const vacuums = devices.filter(d => d.class === "vacuumcleaner" || (d.capabilities || []).includes("vacuumcleaner_state"));
+  return (
+    <div className="module-settings-drawer">
+      <div className="settings-title">Støvsuger-enhet</div>
+      <select className="settings-select" value={globalPrefs.roborockDeviceId || ""}
+        onChange={e => onUpdate({ ...globalPrefs, roborockDeviceId: e.target.value || undefined })}>
+        <option value="">— Auto-detekter —</option>
+        {vacuums.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+      </select>
+      <div className="settings-title" style={{ marginTop: 12 }}>Rutine (flow)</div>
+      <select className="settings-select" value={globalPrefs.roborockFlowId || ""}
+        onChange={e => onUpdate({ ...globalPrefs, roborockFlowId: e.target.value || undefined })}>
+        <option value="">— Ingen rutine —</option>
+        {flows.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+      </select>
+    </div>
+  );
+}
+
 const MODULE_TYPES = {
   hanweather: { title: "Strøm & Ute", desc: "Strømmåler og utetemperatur i ett", defaultSpan: 1 },
   han: { title: "HAN-måler", desc: "Live effekt og forbruk", defaultSpan: 1 },
@@ -950,6 +1096,9 @@ const MODULE_TYPES = {
   flows: { title: "Hurtigvalg", desc: "Favoritt-flows som scene-knapper", defaultSpan: 1 },
   favorites: { title: "Favoritt-enheter", desc: "Velg dine viktigste enheter", defaultSpan: 1 },
   zones: { title: "Soneoversikt", desc: "Mini-status per rom", defaultSpan: 1 },
+  zonesimple: { title: "Soner (enkel)", desc: "Kun sonenavn – trykk for å styre lys og temp", defaultSpan: 1 },
+  sonos: { title: "Sonos", desc: "Radio og styring av høyttalere", defaultSpan: 1 },
+  roborock: { title: "Støvsuger", desc: "Status og styring av robotstøvsuger", defaultSpan: 1 },
 };
 
 function HanModule({ devices, prefs, globalPrefs, isEdit, settingsOpen }) {
@@ -1109,7 +1258,7 @@ function HanWeatherModule({ devices, zones, globalPrefs }) {
   const kw = power != null ? power / 1000 : null;
   const temp = sensor?.capabilitiesObj?.measure_temperature?.value;
 
-  const [forecast, setForecast] = useState(null);
+  const [blocks, setBlocks] = useState([]);
   useEffect(() => {
     const load = async () => {
       try {
@@ -1118,13 +1267,25 @@ function HanWeatherModule({ devices, zones, globalPrefs }) {
         const json = await r.json();
         const ts = json.properties?.timeseries;
         if (!ts?.length) return;
-        const slice = ts.slice(0, 24);
-        const temps = slice.map(e => e.data?.instant?.details?.air_temperature).filter(t => t != null);
-        const symbol = ts[0]?.data?.next_6_hours?.summary?.symbol_code || ts[0]?.data?.next_1_hours?.summary?.symbol_code;
-        const precip = ts[0]?.data?.next_6_hours?.details?.precipitation_amount ?? 0;
-        const wind = ts[0]?.data?.instant?.details?.wind_speed;
-        const humidity = ts[0]?.data?.instant?.details?.relative_humidity;
-        setForecast({ symbol, minTemp: temps.length ? Math.min(...temps) : null, maxTemp: temps.length ? Math.max(...temps) : null, precip, wind, humidity });
+        const now = Date.now();
+        const upcoming = ts.filter(e => new Date(e.time).getTime() >= now - 3600000);
+        const result = [0, 1].map(i => {
+          const slice = upcoming.slice(i * 6, i * 6 + 7);
+          if (!slice.length) return null;
+          const start = new Date(slice[0].time);
+          const end = new Date(slice[Math.min(6, slice.length - 1)].time);
+          const label = `${String(start.getHours()).padStart(2,'0')}–${String(end.getHours()).padStart(2,'0')}`;
+          const temps = slice.map(e => e.data?.instant?.details?.air_temperature).filter(t => t != null);
+          const symbol = slice[0]?.data?.next_6_hours?.summary?.symbol_code || slice[0]?.data?.next_1_hours?.summary?.symbol_code;
+          const precip = slice[0]?.data?.next_6_hours?.details?.precipitation_amount
+            ?? slice.reduce((s, e) => s + (e.data?.next_1_hours?.details?.precipitation_amount ?? 0), 0);
+          const wind = slice[0]?.data?.instant?.details?.wind_speed ?? null;
+          const rainProb = slice[0]?.data?.next_6_hours?.details?.probability_of_precipitation
+            ?? slice[0]?.data?.next_1_hours?.details?.probability_of_precipitation
+            ?? null;
+          return { label, symbol, min: temps.length ? Math.round(Math.min(...temps)) : null, max: temps.length ? Math.round(Math.max(...temps)) : null, precip, wind, rainProb };
+        }).filter(Boolean);
+        setBlocks(result);
       } catch (e) { console.error("Forecast:", e); }
     };
     load();
@@ -1150,26 +1311,28 @@ function HanWeatherModule({ devices, zones, globalPrefs }) {
           <div className="han-detail">{sensor ? "Ute" : "Ingen sensor"}</div>
         </div>
       </div>
-      {forecast && (() => { const tip = clothingRec(forecast); return (
-        <div className="wx-row">
-          <div className="wx-icon">{wxIcon(forecast.symbol)}</div>
-          <div className="wx-details">
-            <div className="wx-condition">{wxLabel(forecast.symbol)}</div>
-            <div className="wx-temps">
-              <span className="wx-temp">{forecast.minTemp != null ? Math.round(forecast.minTemp) : "–"}°</span>
-              <span className="wx-temp-sep">–</span>
-              <span className="wx-temp hi">{forecast.maxTemp != null ? Math.round(forecast.maxTemp) : "–"}°</span>
+      {blocks.length > 0 && (
+        <div className="wx-blocks">
+          {blocks.map((b, i) => (
+            <div key={i} className="wx-block">
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
+                <div className="wx-block-time" style={{marginBottom:0}}>{b.label}</div>
+                <div className="wx-block-icon" style={{marginBottom:0}}>{wxIcon(b.symbol)}</div>
+              </div>
+              <div className="wx-block-condition">{wxLabel(b.symbol) ?? "–"}</div>
+              <div className="wx-block-temps">
+                <span className="wx-block-lo">{b.min ?? "–"}°</span>
+                <span className="wx-block-sep">–</span>
+                <span className="wx-block-hi">{b.max ?? "–"}°</span>
+              </div>
+              <div className="wx-block-meta">
+                {b.wind != null && <span>💨 {Math.round(b.wind)} m/s</span>}
+                <span style={{color: (b.rainProb ?? 0) > 30 ? "var(--moss)" : "var(--ink-mute)"}}>🌧️ {Math.round(b.rainProb ?? 0)}%</span>
+              </div>
             </div>
-            <div className="wx-meta">
-              {forecast.wind != null && <span className="wx-meta-item">💨 {Number(forecast.wind).toFixed(0)} m/s</span>}
-              <span className="wx-meta-item" style={{color: forecast.precip > 0.1 ? "var(--moss)" : "var(--ink-mute)"}}>
-                🌧️ {Number(forecast.precip).toFixed(1)} mm
-              </span>
-            </div>
-          </div>
-          {tip && <div className="clothing-inline">🧥 {tip}</div>}
+          ))}
         </div>
-      ); })()}
+      )}
     </>
   );
 }
@@ -1198,7 +1361,6 @@ function HanWeatherModuleSettings({ devices, zones, globalPrefs, onUpdate }) {
 const TRANSIT_STOPS = [
   { key: "kragsvei",        label: "Krags vei",   dir: "Majorstuen",    mode: "bus"   },
   { key: "amager",          label: "Amagerveien", dir: "Majorstuen",    mode: "bus"   },
-  { key: "holmenOsteraas",  label: "Holmen",      dir: "Østerås",       mode: "metro" },
   { key: "holmenElling",    label: "Holmen",      dir: "Ellingsrudåsen",mode: "metro" },
 ];
 
@@ -1538,7 +1700,7 @@ function CalendarModule({ globalPrefs }) {
       ) : !events ? (
         <div className="empty">Laster…</div>
       ) : count === 0 ? (
-        <div className="empty" style={{ fontStyle: "italic" }}>Ingen avtaler i dag ✓</div>
+        <div className="empty" style={{ fontStyle: "italic" }}>{globalPrefs.calendarEmptyMessage || "Ingen avtaler i dag ✓"}</div>
       ) : (
         <div className="cal-list">
           {events.map((ev, i) => (
@@ -1563,6 +1725,7 @@ function CalendarModule({ globalPrefs }) {
 
 function CalendarModuleSettings({ globalPrefs, onUpdate }) {
   const [url, setUrl] = useState(globalPrefs.calendarUrl || "");
+  const [emptyMsg, setEmptyMsg] = useState(globalPrefs.calendarEmptyMessage || "");
   return (
     <div className="module-settings-drawer">
       <div className="settings-title">iCloud kalender-URL</div>
@@ -1577,6 +1740,15 @@ function CalendarModuleSettings({ globalPrefs, onUpdate }) {
       <div className="settings-hint" style={{ marginTop: 8 }}>
         Åpne Kalender-appen → høyreklikk på kalenderen → Del kalender → Aktiver Offentlig kalender → Kopier lenke
       </div>
+      <div className="settings-title" style={{ marginTop: 12 }}>Beskjed når kalenderen er tom</div>
+      <input
+        type="text"
+        placeholder="Ingen avtaler i dag ✓"
+        value={emptyMsg}
+        onChange={e => setEmptyMsg(e.target.value)}
+        onBlur={() => onUpdate({ ...globalPrefs, calendarEmptyMessage: emptyMsg.trim() || undefined })}
+        style={{ width: "100%", padding: "6px 8px", background: "var(--paper)", border: "1px solid var(--line)", fontSize: 11, color: "var(--ink)" }}
+      />
     </div>
   );
 }
@@ -1714,28 +1886,25 @@ function ZonesOverviewModule({ tree, devicesByZone, onToggle, onSetCapability })
             const lightsOn = lights.filter(d => d.capabilitiesObj?.onoff?.value).length;
             const temps = devices.filter(d => d.capabilitiesObj?.measure_temperature?.value != null);
             const avgTemp = temps.length ? (temps.reduce((s, d) => s + Number(d.capabilitiesObj.measure_temperature.value), 0) / temps.length).toFixed(1) : null;
-            const cols = 3;
-            const isLastOdd = flat.length % cols !== 0 && i === flat.length - 1;
-            const remaining = cols - (flat.length % cols);
 
             return (
-              <div key={zone.id} className="zone-tile" style={isLastOdd ? { gridColumn: `span ${remaining + 1}`, textAlign: "center", alignItems: "center" } : undefined} onClick={() => setSelected(zone)}>
-                <div className="zone-tile-name">{zone.name}</div>
-                <div className="zone-tile-stats">
-                  {lights.length > 0 && (
-                    <div className="zone-tile-stat">
-                      <div className="zone-tile-val">{lightsOn}<em>/{lights.length}</em></div>
-                      <div className="zone-tile-lbl">Lys</div>
-                    </div>
-                  )}
-                  {avgTemp && (
-                    <div className="zone-tile-stat">
-                      <div className="zone-tile-val">{avgTemp}°</div>
-                      <div className="zone-tile-lbl">Temp</div>
-                    </div>
-                  )}
+              <React.Fragment key={zone.id}>
+                <div className="zone-tile" onClick={() => setSelected(zone)}>
+                  <div className="zone-tile-name">{zone.name}</div>
+                  <div className="zone-tile-stats">
+                    {lights.length > 0 && (
+                      <div className="zone-tile-stat">
+                        <div className="zone-tile-val">{lightsOn}<em>/{lights.length}</em></div>
+                      </div>
+                    )}
+                    {avgTemp && (
+                      <div className="zone-tile-stat">
+                        <div className="zone-tile-val">{avgTemp}<span className="zone-tile-lbl">°</span></div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </React.Fragment>
             );
           })}
         </div>
@@ -1744,22 +1913,172 @@ function ZonesOverviewModule({ tree, devicesByZone, onToggle, onSetCapability })
   );
 }
 
+function ZonesSimpleModule({ tree, devicesByZone, onToggle, onSetCapability }) {
+  const [selected, setSelected] = useState(null);
+  const flat = [];
+  const collect = (zone) => {
+    const direct = devicesByZone[zone.id] || [];
+    const isContainer = (zone.children || []).length > 0;
+    if (direct.length > 0 && !isContainer) flat.push(zone);
+    (zone.children || []).forEach(c => collect(c));
+  };
+  tree.forEach(z => collect(z));
+
+  return (
+    <>
+      {selected && (
+        <ZonePopup
+          zone={selected}
+          devices={devicesByZone[selected.id] || []}
+          onClose={() => setSelected(null)}
+          onToggle={onToggle}
+          onSetCapability={onSetCapability}
+        />
+      )}
+      {flat.length === 0 ? (
+        <div className="empty">Ingen rom</div>
+      ) : (
+        <div className="sonos-stations" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+          {flat.map(zone => (
+            <button key={zone.id} className="sonos-station-btn" onClick={() => setSelected(zone)}>
+              {zone.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 // ==================== SCENE BUTTON ====================
+// ==================== SONOS ====================
+const RADIO_STATIONS = [
+  { name: "NRK P1", stream: "https://cdn0-47115-liveicecast0.dna.contentdelivery.net/p1_mp3_h", logo: "/public/nrk-p1.svg?v=2" },
+  { name: "NRK P2", stream: "https://cdn0-47115-liveicecast0.dna.contentdelivery.net/p2_aac_h", logo: "/public/nrk-p2.svg?v=2" },
+  { name: "NRK P3", stream: "https://cdn0-47115-liveicecast0.dna.contentdelivery.net/p3_mp3_h", logo: "/public/nrk-p3.svg?v=2" },
+];
+
+function SonosModule() {
+  const [speakers, setSpeakers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedIps, setSelectedIps] = useState(new Set());
+  const [playingStation, setPlayingStation] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const data = await fetch("/sonos/devices").then(r => r.json());
+      setSpeakers(data);
+    } catch {}
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); const t = setInterval(load, 10000); return () => clearInterval(t); }, [load]);
+
+  const toggleSpeaker = (ip) => {
+    setSelectedIps(prev => {
+      const next = new Set(prev);
+      if (next.has(ip)) {
+        next.delete(ip);
+        const spk = speakers.find(s => s.ip === ip);
+        if (spk?.state === "playing") {
+          control(ip, "pause");
+          setPlayingStation(null);
+        }
+      } else {
+        next.add(ip);
+      }
+      return next;
+    });
+  };
+
+  const playRadio = async (station) => {
+    setBusy(true);
+    setPlayingStation(station.name);
+    const targets = selectedIps.size > 0 ? [...selectedIps] : speakers.map(s => s.ip);
+    await Promise.all(targets.map(ip =>
+      fetch("/sonos/radio", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ip, streamUrl: station.stream, stationName: station.name }) })
+    ));
+    setBusy(false);
+    setTimeout(load, 1500);
+  };
+
+  const control = async (ip, action, volume) => {
+    await fetch("/sonos/control", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ip, action, volume }) });
+    setTimeout(load, 600);
+  };
+
+  if (loading) return <div className="empty">Søker etter høyttalere…</div>;
+  if (!speakers.length) return <div className="empty">Ingen Sonos-høyttalere funnet</div>;
+
+  const selectedSpeakers = speakers.filter(s => selectedIps.has(s.ip));
+  const displayVolume = selectedSpeakers.length > 0
+    ? Math.round(selectedSpeakers.reduce((sum, s) => sum + s.volume, 0) / selectedSpeakers.length)
+    : 50;
+
+  return (
+    <div>
+      <div className="sonos-stations">
+        {RADIO_STATIONS.map(st => (
+          <button key={st.name} className={`sonos-station-btn ${playingStation === st.name ? "active" : ""}`}
+            onClick={() => playRadio(st)} disabled={busy || selectedIps.size === 0}>
+            <img src={st.logo} alt={st.name} />
+          </button>
+        ))}
+      </div>
+
+      <div className="sonos-stations" style={{ marginTop: 8, marginBottom: 0 }}>
+        {speakers.map(spk => (
+          <button key={spk.ip}
+            className={`sonos-station-btn sonos-speaker-btn ${selectedIps.has(spk.ip) ? "selected" : ""}`}
+            onClick={() => toggleSpeaker(spk.ip)}>
+            {spk.name}{spk.state === "playing" ? " ▶" : ""}
+          </button>
+        ))}
+      </div>
+
+      <div className="sonos-controls">
+        <div className="sonos-vol-wrap">
+          <input type="range" min={0} max={100} step={1}
+            value={displayVolume}
+            className="slider"
+            onChange={e => setSpeakers(prev => prev.map(s => selectedIps.has(s.ip) ? { ...s, volume: +e.target.value } : s))}
+            onMouseUp={e => [...selectedIps].forEach(ip => control(ip, "volume", +e.target.value))}
+            onTouchEnd={e => [...selectedIps].forEach(ip => control(ip, "volume", +e.target.value))} />
+        </div>
+        <span style={{ fontSize: 10, color: "var(--ink-mute)", flexShrink: 0 }}>{displayVolume}</span>
+      </div>
+    </div>
+  );
+}
+
 function SceneButton({ flow, onRun }) {
   const [running, setRunning] = useState(false);
   const [ran, setRan] = useState(false);
+  const [failed, setFailed] = useState(false);
   const handle = async (e) => {
     e.stopPropagation();
+    if (running) return;
     setRunning(true);
-    try { await onRun(flow.id); } catch (e) { console.error(e); }
-    setRunning(false);
-    setRan(true);
-    setTimeout(() => setRan(false), 1800);
+    setFailed(false);
+    try {
+      await onRun(flow.id);
+      setRan(true);
+      setTimeout(() => setRan(false), 1800);
+    } catch (err) {
+      console.error("Flow trigger feil:", err);
+      setFailed(true);
+      setTimeout(() => setFailed(false), 2500);
+    } finally {
+      setRunning(false);
+    }
   };
   return (
-    <button className={`scene-btn ${ran ? "ran" : ""}`} onClick={handle} disabled={running}>
+    <button className={`scene-btn ${ran ? "ran" : ""} ${failed ? "failed" : ""}`} onClick={handle} disabled={running || flow.enabled === false}>
       <span className="scene-name">{flow.name}</span>
-      <span className="scene-arrow">{running ? "…" : ran ? "✓" : "→"}</span>
+      <span className="scene-arrow">{running ? "…" : ran ? "✓" : failed ? "✗" : flow.enabled === false ? "—" : "→"}</span>
     </button>
   );
 }
@@ -1921,6 +2240,9 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
       case "flows": return <FlowsModule flows={flows} globalPrefs={globalPrefs} onRunFlow={onRunFlow} />;
       case "favorites": return <FavoritesModule devices={devices} globalPrefs={globalPrefs} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />;
       case "zones": return <ZonesOverviewModule tree={tree} devicesByZone={devicesByZone} onToggle={onToggle} onSetCapability={onSetCapability} />;
+      case "zonesimple": return <ZonesSimpleModule tree={tree} devicesByZone={devicesByZone} onToggle={onToggle} onSetCapability={onSetCapability} />;
+      case "sonos": return <SonosModule />;
+      case "roborock": return <RoboRockModule devices={devices} flows={flows} globalPrefs={globalPrefs} onSetCapability={onSetCapability} onRunFlow={onRunFlow} />;
       default: return <div className="empty">Ukjent modul</div>;
     }
   };
@@ -1935,6 +2257,7 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
       case "flows": return <FlowsModuleSettings flows={flows} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "favorites": return <FavoritesModuleSettings devices={devices} zones={zones} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "zones": return <div className="settings-hint">Denne modulen viser automatisk alle rom med enheter.</div>;
+      case "roborock": return <RoboRockModuleSettings devices={devices} flows={flows} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       default: return null;
     }
   };
@@ -2523,7 +2846,7 @@ function Dashboard({ homeyName, onLogout }) {
   };
 
   const handleRunFlow = async (id) => {
-    await api(`/homey/manager/flow/flow/${id}/trigger`, { method: "PUT", body: "{}" });
+    await api(`/homey/manager/flow/flow/${id}/trigger`, { method: "POST", body: JSON.stringify({}) });
   };
 
   const handleLogout = async () => {
@@ -2567,80 +2890,26 @@ function Dashboard({ homeyName, onLogout }) {
         <div className="masthead-right">
           <div className="meta">
             <div className="meta-line"><span className="pulse"></span> {homeyName || "Synkronisert"}</div>
-            <div>{devices.length} enheter · {flows.length} flows</div>
           </div>
           <div className="actions">
+            <button className={`pill-btn ${isEditHome ? "primary" : ""}`} onClick={() => setIsEditHome(e => !e)}>
+              {isEditHome ? "Ferdig" : "Rediger"}
+            </button>
             <button className={`icon-btn ${loading ? "spinning" : ""}`} onClick={load} disabled={loading} title="Oppdater">↻</button>
             <button className="icon-btn" onClick={handleLogout} title="Logg ut">✕</button>
           </div>
         </div>
       </header>
 
-      <div className="tabs-bar">
-        <nav className="tabs">
-          {tabs.filter(t => t.icon).map(t => (
-            <button key={t.key} className={`tab ${tab === t.key ? "active" : ""}`} onClick={() => { setTab(t.key); setIsEditHome(false); }}>
-              <em>{t.icon}</em>{t.label}
-            </button>
-          ))}
-        </nav>
-        <div className="tabs-right">
-          <nav className="tabs">
-            {tabs.filter(t => !t.icon).map(t => (
-              <button key={t.key} className={`tab ${tab === t.key ? "active" : ""}`} onClick={() => { setTab(t.key); setIsEditHome(false); }}>
-                {t.label}
-              </button>
-            ))}
-          </nav>
-          {tab === "hjem" && (
-            <button className={`pill-btn ${isEditHome ? "primary" : ""}`} onClick={() => setIsEditHome(e => !e)}>
-              {isEditHome ? "Ferdig" : "Rediger"}
-            </button>
-          )}
-        </div>
-      </div>
-
       <div className="tab-content">
         {error && <div className="error-banner">{error}</div>}
-
-        {tab === "hjem" && (
-          <HomeView
-            devices={devices} flows={flows} zones={zones} tree={tree} devicesByZone={devicesByZone}
-            prefs={prefs} globalPrefs={globalPrefs} onUpdateGlobalPrefs={handleUpdateGlobalPrefs}
-            onSetCapability={handleSetCapability} onToggle={handleToggle}
-            onUpdatePrefs={handleUpdatePrefs} onRunFlow={handleRunFlow}
-            isEdit={isEditHome}
-          />
-        )}
-        {tab === "styring" && (
-          <StyringView floors={floors} devicesByZone={devicesByZone}
-            onToggle={handleToggle} onSetCapability={handleSetCapability}
-            prefs={prefs} onUpdatePrefs={handleUpdatePrefs}
-            onUpdateStyringPrefs={handleUpdateStyringPrefs} />
-        )}
-        {tab === "sikkerhet" && (
-          <SecurityView devices={devices} zones={zones} events={events}
-            onToggle={handleToggle} onSetCapability={handleSetCapability}
-            prefs={prefs} onUpdatePrefs={handleUpdatePrefs} />
-        )}
-        {tab === "alle" && (
-          <div className="single-view">
-            <div className="grid-wide">
-              {devices.map(d => (
-                <DeviceCard key={d.id} device={d} onToggle={handleToggle}
-                  onSetCapability={handleSetCapability} prefs={prefs} onUpdatePrefs={handleUpdatePrefs} />
-              ))}
-            </div>
-          </div>
-        )}
-        {tab === "flows" && (
-          <div className="single-view">
-            <div className="flow-list">
-              {flows.length === 0 && <div className="empty">Ingen flows funnet</div>}
-              {flows.map(f => <FlowRow key={f.id} flow={f} onRun={handleRunFlow} />)}
-            </div>
-          </div>
-        )}
+        <HomeView
+          devices={devices} flows={flows} zones={zones} tree={tree} devicesByZone={devicesByZone}
+          prefs={prefs} globalPrefs={globalPrefs} onUpdateGlobalPrefs={handleUpdateGlobalPrefs}
+          onSetCapability={handleSetCapability} onToggle={handleToggle}
+          onUpdatePrefs={handleUpdatePrefs} onRunFlow={handleRunFlow}
+          isEdit={isEditHome}
+        />
       </div>
 
       {doorbellAlert && (

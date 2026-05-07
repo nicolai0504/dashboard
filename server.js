@@ -111,6 +111,7 @@ const calCache = new Map(); // url → { data, expires }
 let lastDing = null;
 let dingListenersSetup = false;
 const snapshotCache = {}; // { [cameraId]: { buf, ts } }
+let sonosDiscoveryPromise = null; // ensures discovery runs exactly once
 
 async function setupDingListeners() {
   if (dingListenersSetup) return;
@@ -343,6 +344,17 @@ const server = http.createServer(async (req, res) => {
       return res.end(fs.readFileSync(HTML_PATH));
     }
 
+    // Static assets from /public/
+    if (p.startsWith("/public/") && !p.includes("..")) {
+      const filePath = path.join(__dirname, p);
+      if (fs.existsSync(filePath)) {
+        const ext = path.extname(filePath).slice(1).toLowerCase();
+        const mime = { svg: "image/svg+xml", png: "image/png", jpg: "image/jpeg", webp: "image/webp" };
+        res.writeHead(200, { "Content-Type": mime[ext] || "application/octet-stream", "Cache-Control": "public, max-age=86400" });
+        return res.end(fs.readFileSync(filePath));
+      }
+    }
+
     // Auth status
     if (p === "/auth/status") {
       return send(res, 200, {
@@ -552,8 +564,67 @@ const server = http.createServer(async (req, res) => {
       if (!state.tokens) return send(res, 401, { error: "Ikke autentisert" });
       const apiPath = "/" + p.slice("/homey/".length) + (url.search || "");
       const body = ["POST", "PUT", "PATCH"].includes(req.method) ? await readBody(req) : null;
+      if (req.method !== "GET") console.log(`Homey ${req.method} ${apiPath}`);
       const data = await homeyRequest(req.method, apiPath, body);
       return send(res, 200, data);
+    }
+
+    // ---- Sonos ----
+    if (p === "/sonos/devices") {
+      const { AsyncDeviceDiscovery, Sonos } = await import("sonos");
+      if (!sonosDiscoveryPromise) {
+        sonosDiscoveryPromise = (async () => {
+          const discovery = new AsyncDeviceDiscovery();
+          const found = await discovery.discoverMultiple({ timeout: 4000 }).catch(() => []);
+          const initial = await Promise.all(found.map(async dev => {
+            try {
+              const s = new Sonos(dev.host);
+              const attrs = await s.getZoneAttrs();
+              return { ip: dev.host, name: attrs.CurrentZoneName };
+            } catch { return null; }
+          }));
+          return [...new Map(initial.filter(Boolean).map(d => [d.ip, d])).values()]
+            .sort((a, b) => a.name.localeCompare(b.name, "nb"));
+        })();
+      }
+      const sonosKnownHosts = await sonosDiscoveryPromise;
+      const devices = await Promise.all(sonosKnownHosts.map(async ({ ip, name }) => {
+        try {
+          const s = new Sonos(ip);
+          const [state, vol, media] = await Promise.all([
+            s.getCurrentState(),
+            s.getVolume(),
+            s.currentTrack().catch(() => null),
+          ]);
+          return { ip, name, state, volume: vol,
+            track: media?.title || null, artist: media?.artist || null };
+        } catch { return null; }
+      }));
+      return send(res, 200, devices.filter(Boolean));
+    }
+
+    if (p === "/sonos/radio" && req.method === "POST") {
+      const { ip, streamUrl, stationName } = await readBody(req);
+      const { Sonos } = await import("sonos");
+      const s = new Sonos(ip);
+      const parsed = new URL(streamUrl);
+      const sonosUri = `x-rincon-mp3radio://${parsed.host}${parsed.pathname}${parsed.search}`;
+      const metadata = `<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"><item id="R:0/0/1" parentID="R:0/0" restricted="true"><dc:title>${stationName.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</dc:title><upnp:class>object.item.audioItem.audioBroadcast</upnp:class></item></DIDL-Lite>`;
+      await s.setAVTransportURI({ uri: sonosUri, metadata });
+      await s.play();
+      return send(res, 200, { ok: true });
+    }
+
+    if (p === "/sonos/control" && req.method === "POST") {
+      const { ip, action, volume } = await readBody(req);
+      const { Sonos } = await import("sonos");
+      const s = new Sonos(ip);
+      if (action === "play") await s.play();
+      else if (action === "pause") await s.pause();
+      else if (action === "next") await s.next();
+      else if (action === "prev") await s.previous();
+      else if (action === "volume" && volume != null) await s.setVolume(Math.round(volume));
+      return send(res, 200, { ok: true });
     }
 
     send(res, 404, { error: "Not found" });
