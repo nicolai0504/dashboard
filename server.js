@@ -34,6 +34,10 @@ const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 const SPOTIFY_REDIRECT_URI = `http://127.0.0.1:${PORT}/spotify/auth/callback`;
 const SPOTIFY_TOKEN_FILE = path.join(__dirname, ".spotify-tokens.json");
 
+const ZAPTEC_USERNAME = process.env.ZAPTEC_USERNAME;
+const ZAPTEC_PASSWORD = process.env.ZAPTEC_PASSWORD;
+const ZAPTEC_CHARGER_ID = process.env.ZAPTEC_CHARGER_ID;
+
 // ---- Ring API (lazy-init) ----
 let _ringApi = null;
 async function getRingApi() {
@@ -233,6 +237,36 @@ async function spotifyFetch(method, apiPath, body) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (!r.ok) throw new Error(`Spotify ${r.status}: ${await r.text()}`);
+  if (r.status === 204) return null;
+  const text = await r.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// ---- Zaptec ----
+let zaptecToken = null;
+let zaptecTokenExpiry = 0;
+
+async function ensureZaptecToken() {
+  if (zaptecToken && Date.now() < zaptecTokenExpiry) return;
+  const r = await fetch("https://api.zaptec.com/oauth/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "password", username: ZAPTEC_USERNAME, password: ZAPTEC_PASSWORD, scope: "openid" }).toString(),
+  });
+  if (!r.ok) throw new Error(`Zaptec autentisering feilet: ${r.status}`);
+  const data = await r.json();
+  zaptecToken = data.access_token;
+  zaptecTokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
+}
+
+async function zaptecFetch(method, path, body) {
+  await ensureZaptecToken();
+  const r = await fetch(`https://api.zaptec.com${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${zaptecToken}`, ...(body !== undefined ? { "Content-Type": "application/json" } : {}) },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!r.ok) throw new Error(`Zaptec ${r.status}: ${await r.text()}`);
   if (r.status === 204) return null;
   const text = await r.text();
   return text ? JSON.parse(text) : null;
@@ -755,6 +789,59 @@ const server = http.createServer(async (req, res) => {
       const { device_id, resume } = await readBody(req);
       const qs = device_id ? `?device_id=${device_id}` : "";
       await spotifyFetch("PUT", resume ? `/me/player/play${qs}` : `/me/player/pause${qs}`, resume ? {} : undefined);
+      return send(res, 200, { ok: true });
+    }
+
+    // ---- Zaptec ----
+    if (p === "/zaptec/status") {
+      if (!ZAPTEC_USERNAME) return send(res, 400, { error: "ZAPTEC_USERNAME ikke konfigurert" });
+      // Finn lader-ID: bruk env-variabel eller hent første tilgjengelige
+      let chargerId = ZAPTEC_CHARGER_ID;
+      if (!chargerId) {
+        const chargers = await zaptecFetch("GET", "/api/chargers?Roles=1");
+        if (!chargers?.Data?.length) return send(res, 404, { error: "Ingen ladere funnet" });
+        chargerId = chargers.Data[0].Id;
+      }
+      const [chargerInfo, stateArr] = await Promise.all([
+        zaptecFetch("GET", `/api/chargers/${chargerId}`),
+        zaptecFetch("GET", `/api/chargers/${chargerId}/state`),
+      ]);
+      // Parse relevante state-verdier
+      const stateMap = {};
+      (stateArr || []).forEach(s => { stateMap[s.StateId] = s.ValueAsString; });
+      return send(res, 200, {
+        chargerId,
+        name: chargerInfo?.Name || "Zaptec-lader",
+        mode: parseInt(stateMap[710] ?? chargerInfo?.OperatingMode ?? "1"),
+        sessionEnergy: parseFloat(stateMap[553] || stateMap[554] || "0"),
+        currentL1: parseFloat(stateMap[507] || "0"),
+        currentL2: parseFloat(stateMap[508] || "0"),
+        currentL3: parseFloat(stateMap[509] || "0"),
+        voltage: parseFloat(stateMap[513] || "230"),
+      });
+    }
+
+    if (p === "/zaptec/authorize" && req.method === "POST") {
+      if (!ZAPTEC_USERNAME) return send(res, 400, { error: "ZAPTEC_USERNAME ikke konfigurert" });
+      let chargerId = ZAPTEC_CHARGER_ID;
+      if (!chargerId) {
+        const chargers = await zaptecFetch("GET", "/api/chargers?Roles=1");
+        chargerId = chargers?.Data?.[0]?.Id;
+        if (!chargerId) return send(res, 404, { error: "Ingen lader funnet" });
+      }
+      await zaptecFetch("POST", `/api/chargers/${chargerId}/authorizecharge`);
+      return send(res, 200, { ok: true });
+    }
+
+    if (p === "/zaptec/stop" && req.method === "POST") {
+      if (!ZAPTEC_USERNAME) return send(res, 400, { error: "ZAPTEC_USERNAME ikke konfigurert" });
+      let chargerId = ZAPTEC_CHARGER_ID;
+      if (!chargerId) {
+        const chargers = await zaptecFetch("GET", "/api/chargers?Roles=1");
+        chargerId = chargers?.Data?.[0]?.Id;
+        if (!chargerId) return send(res, 404, { error: "Ingen lader funnet" });
+      }
+      await zaptecFetch("POST", `/api/chargers/${chargerId}/sendCommand/506`);
       return send(res, 200, { ok: true });
     }
 
