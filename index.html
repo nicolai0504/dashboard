@@ -1136,6 +1136,7 @@ const MODULE_TYPES = {
   zonesimple: { title: "Soner (enkel)", desc: "Kun sonenavn – trykk for å styre lys og temp", defaultSpan: 1 },
   sonos: { title: "Sonos", desc: "Radio og styring av høyttalere", defaultSpan: 1 },
   roborock: { title: "Støvsuger", desc: "Status og styring av robotstøvsuger", defaultSpan: 1 },
+  spotify: { title: "Spotify", desc: "Spill av spillelister og søk i musikk", defaultSpan: 1 },
 };
 
 function HanModule({ devices, prefs, globalPrefs, isEdit, settingsOpen }) {
@@ -2098,58 +2099,27 @@ function SonosModule() {
   );
 }
 
-// ==================== SPOTIFY OVERLAY ====================
+// ==================== SPOTIFY MODULE + OVERLAY ====================
 const SPOTIFY_LOGO = (
   <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
 );
 
 function SpotifyOverlay({ onClose }) {
-  const [authed, setAuthed] = useState(null);
-  const [playlists, setPlaylists] = useState([]);
+  const { authed, playlists, devices, deviceId, setDeviceId, nowPlaying, activeUri, busy, play } = useSpotify();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState(null);
-  const [devices, setDevices] = useState([]);
-  const [deviceId, setDeviceId] = useState("");
-  const [nowPlaying, setNowPlaying] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [activeUri, setActiveUri] = useState(null);
-
-  useEffect(() => {
-    fetch("/spotify/auth/status").then(r => r.json()).then(async d => {
-      setAuthed(d.authenticated);
-      if (!d.authenticated) return;
-      const [pl, devs, player] = await Promise.all([
-        fetch("/spotify/me/playlists").then(r => r.json()).catch(() => null),
-        fetch("/spotify/devices").then(r => r.json()).catch(() => null),
-        fetch("/spotify/player").then(r => r.ok ? r.json() : null).catch(() => null),
-      ]);
-      setPlaylists(pl?.items || []);
-      setDevices(devs?.devices || []);
-      if (player?.device?.id) setDeviceId(player.device.id);
-      if (player?.item) { setNowPlaying(player.item.name + (player.item.artists?.[0] ? " · " + player.item.artists[0].name : "")); setActiveUri(player?.context?.uri || null); }
-    });
-  }, []);
 
   useEffect(() => {
     if (!authed || !query.trim()) { setResults(null); return; }
     const t = setTimeout(async () => {
       const d = await fetch(`/spotify/search?q=${encodeURIComponent(query)}`).then(r => r.json()).catch(() => null);
       if (!d) return;
-      setResults([...(d.playlists?.items || []), ...(d.albums?.items || [])].filter(Boolean));
+      const tracks = (d.tracks?.items || []).map(t => ({ ...t, _image: t.album?.images?.[0]?.url }));
+      const contexts = [...(d.playlists?.items || []), ...(d.albums?.items || [])];
+      setResults([...tracks, ...contexts].filter(Boolean));
     }, 380);
     return () => clearTimeout(t);
   }, [query, authed]);
-
-  const play = async (item) => {
-    setBusy(true);
-    try {
-      await fetch("/spotify/play", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ context_uri: item.uri, device_id: deviceId || undefined }) });
-      setActiveUri(item.uri);
-      setNowPlaying(item.name);
-    } catch (e) { console.error(e); }
-    setBusy(false);
-  };
 
   const items = results !== null ? results : playlists;
   const sectionLabel = results !== null ? `Søkeresultater (${results.length})` : "Mine spillelister";
@@ -2190,12 +2160,12 @@ function SpotifyOverlay({ onClose }) {
                 {items.map(item => item && (
                   <button key={item.id} className={`spotify-item ${activeUri === item.uri ? "active" : ""}`}
                     onClick={() => play(item)} disabled={busy}>
-                    {item.images?.[0]?.url
-                      ? <img className="spotify-item-img" src={item.images[0].url} alt="" />
+                    {(item._image || item.images?.[0]?.url)
+                      ? <img className="spotify-item-img" src={item._image || item.images[0].url} alt="" />
                       : <div className="spotify-item-placeholder">🎵</div>}
                     <div className="spotify-item-info">
                       <div className="spotify-item-name">{item.name}</div>
-                      <div className="spotify-item-meta">{item.type === "album" ? `Album · ${item.artists?.[0]?.name || ""}` : `Spilleliste · ${item.tracks?.total || "?"} låter`}</div>
+                      <div className="spotify-item-meta">{item.type === "track" ? `${item.artists?.[0]?.name || ""} · ${item.album?.name || ""}` : item.type === "album" ? `Album · ${item.artists?.[0]?.name || ""}` : `Spilleliste · ${item.tracks?.total || "?"} låter`}</div>
                     </div>
                     <span className="spotify-item-play">{activeUri === item.uri ? "♪" : "▶"}</span>
                   </button>
@@ -2217,6 +2187,131 @@ function SpotifyOverlay({ onClose }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function useSpotify() {
+  const [authed, setAuthed] = useState(null);
+  const [playlists, setPlaylists] = useState([]);
+  const [devices, setDevices] = useState([]);
+  const [deviceId, setDeviceId] = useState("");
+  const [nowPlaying, setNowPlaying] = useState(null);
+  const [activeUri, setActiveUri] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const reload = useCallback(async () => {
+    const status = await fetch("/spotify/auth/status").then(r => r.json()).catch(() => ({ authenticated: false }));
+    setAuthed(status.authenticated);
+    if (!status.authenticated) return;
+    const [pl, devs, player] = await Promise.all([
+      fetch("/spotify/me/playlists").then(r => r.json()).catch(() => null),
+      fetch("/spotify/devices").then(r => r.json()).catch(() => null),
+      fetch("/spotify/player").then(r => r.ok ? r.json() : null).catch(() => null),
+    ]);
+    setPlaylists(pl?.items || []);
+    setDevices(devs?.devices || []);
+    if (player?.device?.id) setDeviceId(id => id || player.device.id);
+    if (player?.item) {
+      setNowPlaying(player.item.name + (player.item.artists?.[0] ? " · " + player.item.artists[0].name : ""));
+      setActiveUri(player?.context?.uri || null);
+    }
+  }, []);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  const play = async (item) => {
+    setBusy(true);
+    try {
+      const isTrack = item.type === "track";
+      await fetch("/spotify/play", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...(isTrack ? { uris: [item.uri] } : { context_uri: item.uri }),
+          device_id: deviceId || undefined,
+        }) });
+      setActiveUri(item.uri);
+      setNowPlaying(item.name + (item.artists?.[0] ? " · " + item.artists[0].name : ""));
+    } catch (e) { console.error(e); }
+    setBusy(false);
+  };
+
+  return { authed, playlists, devices, deviceId, setDeviceId, nowPlaying, activeUri, busy, play, reload };
+}
+
+function SpotifyModule() {
+  const { authed, playlists, devices, deviceId, setDeviceId, nowPlaying, activeUri, busy, play } = useSpotify();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState(null);
+
+  useEffect(() => {
+    if (!authed || !query.trim()) { setResults(null); return; }
+    const t = setTimeout(async () => {
+      const d = await fetch(`/spotify/search?q=${encodeURIComponent(query)}`).then(r => r.json()).catch(() => null);
+      if (!d) return;
+      setResults([...(d.playlists?.items || []), ...(d.albums?.items || [])].filter(Boolean));
+    }, 380);
+    return () => clearTimeout(t);
+  }, [query, authed]);
+
+  const items = results !== null ? results : playlists;
+
+  return (
+    <>
+      <div className="module-head">
+        <div className="module-title" style={{ display: "flex", alignItems: "center", gap: 6 }}>{SPOTIFY_LOGO}Spotify</div>
+        {nowPlaying && <span className="module-sub" style={{ color: "#1DB954" }}>▶</span>}
+      </div>
+
+      {authed === null && <div className="empty">Laster…</div>}
+
+      {authed === false && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
+          <p style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>Koble til Spotify-kontoen din for å spille musikk.</p>
+          <a href="/spotify/auth/login" className="spotify-connect-btn" style={{ fontSize: 12, padding: "8px 16px" }}>Koble til Spotify</a>
+        </div>
+      )}
+
+      {authed === true && (
+        <>
+          {nowPlaying && (
+            <div className="spotify-now">
+              <div className="spotify-now-dot" />
+              <span className="spotify-now-text">{nowPlaying}</span>
+            </div>
+          )}
+
+          <input className="spotify-search" type="text" placeholder="🔍  Søk…"
+            value={query} onChange={e => setQuery(e.target.value)} />
+
+          <div className="spotify-section">{results !== null ? `Søkeresultater (${results.length})` : "Mine spillelister"}</div>
+          <div className="spotify-list" style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+            {items.map(item => item && (
+              <button key={item.id} className={`spotify-item ${activeUri === item.uri ? "active" : ""}`}
+                onClick={() => play(item)} disabled={busy}>
+                {item.images?.[0]?.url
+                  ? <img className="spotify-item-img" src={item.images[0].url} alt="" />
+                  : <div className="spotify-item-placeholder">🎵</div>}
+                <div className="spotify-item-info">
+                  <div className="spotify-item-name">{item.name}</div>
+                  <div className="spotify-item-meta">{item.type === "album" ? `Album · ${item.artists?.[0]?.name || ""}` : `Spilleliste · ${item.tracks?.total || "?"} låter`}</div>
+                </div>
+                <span className="spotify-item-play">{activeUri === item.uri ? "♪" : "▶"}</span>
+              </button>
+            ))}
+            {items.length === 0 && results !== null && <div className="empty">Ingen treff</div>}
+          </div>
+
+          {devices.length > 0 && (
+            <div className="spotify-device-bar">
+              <span className="spotify-device-lbl">Enhet</span>
+              <select className="spotify-device-select" value={deviceId} onChange={e => setDeviceId(e.target.value)}>
+                <option value="">— Aktiv enhet —</option>
+                {devices.map(d => <option key={d.id} value={d.id}>{d.name}{d.is_active ? " ✓" : ""}</option>)}
+              </select>
+            </div>
+          )}
+        </>
+      )}
+    </>
   );
 }
 
@@ -2409,6 +2504,7 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
       case "zonesimple": return <ZonesSimpleModule tree={tree} devicesByZone={devicesByZone} onToggle={onToggle} onSetCapability={onSetCapability} />;
       case "sonos": return <SonosModule />;
       case "roborock": return <RoboRockModule devices={devices} flows={flows} globalPrefs={globalPrefs} onSetCapability={onSetCapability} onRunFlow={onRunFlow} />;
+      case "spotify": return <SpotifyModule />;
       default: return <div className="empty">Ukjent modul</div>;
     }
   };

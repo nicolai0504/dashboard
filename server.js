@@ -729,7 +729,7 @@ const server = http.createServer(async (req, res) => {
     if (p === "/spotify/search") {
       const q = url.searchParams.get("q");
       if (!q) return send(res, 400, { error: "Mangler q" });
-      const data = await spotifyFetch("GET", `/search?q=${encodeURIComponent(q)}&type=playlist,album&limit=12`);
+      const data = await spotifyFetch("GET", `/search?q=${encodeURIComponent(q)}&type=playlist,album,track&limit=8`);
       return send(res, 200, data);
     }
 
@@ -744,9 +744,10 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (p === "/spotify/play" && req.method === "POST") {
-      const { context_uri, device_id } = await readBody(req);
+      const { context_uri, uris, device_id } = await readBody(req);
       const qs = device_id ? `?device_id=${device_id}` : "";
-      await spotifyFetch("PUT", `/me/player/play${qs}`, { context_uri });
+      const body = uris ? { uris } : { context_uri };
+      await spotifyFetch("PUT", `/me/player/play${qs}`, body);
       return send(res, 200, { ok: true });
     }
 
