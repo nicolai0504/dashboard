@@ -795,29 +795,21 @@ const server = http.createServer(async (req, res) => {
     // ---- Zaptec ----
     if (p === "/zaptec/status") {
       if (!ZAPTEC_USERNAME) return send(res, 400, { error: "ZAPTEC_USERNAME ikke konfigurert" });
-      // Finn lader-ID: bruk env-variabel eller hent første tilgjengelige
-      let chargerId = ZAPTEC_CHARGER_ID;
-      if (!chargerId) {
-        const chargers = await zaptecFetch("GET", "/api/chargers?Roles=1");
-        if (!chargers?.Data?.length) return send(res, 404, { error: "Ingen ladere funnet" });
-        chargerId = chargers.Data[0].Id;
-      }
-      const [chargerInfo, stateArr] = await Promise.all([
-        zaptecFetch("GET", `/api/chargers/${chargerId}`),
-        zaptecFetch("GET", `/api/chargers/${chargerId}/state`),
-      ]);
-      // Parse relevante state-verdier
-      const stateMap = {};
-      (stateArr || []).forEach(s => { stateMap[s.StateId] = s.ValueAsString; });
+      const chargers = await zaptecFetch("GET", "/api/chargers?Roles=1");
+      if (!chargers?.Data?.length) return send(res, 404, { error: "Ingen ladere funnet" });
+      const charger = ZAPTEC_CHARGER_ID
+        ? chargers.Data.find(c => c.Id === ZAPTEC_CHARGER_ID) || chargers.Data[0]
+        : chargers.Data[0];
       return send(res, 200, {
-        chargerId,
-        name: chargerInfo?.Name || "Zaptec-lader",
-        mode: parseInt(stateMap[710] ?? chargerInfo?.OperatingMode ?? "1"),
-        sessionEnergy: parseFloat(stateMap[553] || stateMap[554] || "0"),
-        currentL1: parseFloat(stateMap[507] || "0"),
-        currentL2: parseFloat(stateMap[508] || "0"),
-        currentL3: parseFloat(stateMap[509] || "0"),
-        voltage: parseFloat(stateMap[513] || "230"),
+        chargerId: charger.Id,
+        name: charger.Name || "Zaptec-lader",
+        mode: charger.OperatingMode ?? 1,
+        isOnline: charger.IsOnline ?? false,
+        sessionEnergy: 0,
+        currentL1: 0,
+        currentL2: 0,
+        currentL3: 0,
+        voltage: 230,
       });
     }
 
