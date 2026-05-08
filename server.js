@@ -29,6 +29,11 @@ const PORT = parseInt(process.env.PORT || "3000", 10);
 const REDIRECT_URI = process.env.REDIRECT_URI || `http://localhost:${PORT}/auth/callback`;
 const TOKEN_FILE = path.join(__dirname, ".homey-tokens.json");
 
+const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+const SPOTIFY_REDIRECT_URI = `http://127.0.0.1:${PORT}/spotify/auth/callback`;
+const SPOTIFY_TOKEN_FILE = path.join(__dirname, ".spotify-tokens.json");
+
 // ---- Ring API (lazy-init) ----
 let _ringApi = null;
 async function getRingApi() {
@@ -185,6 +190,52 @@ async function setupDingListeners() {
     console.warn("Ring ding-lytter:", e.message);
     dingListenersSetup = false;
   }
+}
+
+// ---- Spotify ----
+let spotifyTokens = null;
+let spotifyOauthState = null;
+try { spotifyTokens = JSON.parse(fs.readFileSync(SPOTIFY_TOKEN_FILE, "utf8")); } catch {}
+
+function persistSpotifyTokens() {
+  try { fs.writeFileSync(SPOTIFY_TOKEN_FILE, JSON.stringify(spotifyTokens, null, 2)); } catch {}
+}
+
+async function refreshSpotifyToken() {
+  const r = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: "Basic " + Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString("base64"),
+    },
+    body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: spotifyTokens.refresh_token }).toString(),
+  });
+  if (!r.ok) throw new Error(`Spotify token refresh failed: ${r.status}`);
+  const data = await r.json();
+  spotifyTokens = {
+    ...spotifyTokens,
+    access_token: data.access_token,
+    expires_at: Date.now() + (data.expires_in - 60) * 1000,
+    ...(data.refresh_token ? { refresh_token: data.refresh_token } : {}),
+  };
+  persistSpotifyTokens();
+}
+
+async function spotifyFetch(method, apiPath, body) {
+  if (!spotifyTokens) throw new Error("Ikke autentisert med Spotify");
+  if (Date.now() >= spotifyTokens.expires_at) await refreshSpotifyToken();
+  const r = await fetch(`https://api.spotify.com/v1${apiPath}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${spotifyTokens.access_token}`,
+      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!r.ok) throw new Error(`Spotify ${r.status}: ${await r.text()}`);
+  if (r.status === 204) return null;
+  const text = await r.text();
+  return text ? JSON.parse(text) : null;
 }
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
@@ -624,6 +675,85 @@ const server = http.createServer(async (req, res) => {
       else if (action === "next") await s.next();
       else if (action === "prev") await s.previous();
       else if (action === "volume" && volume != null) await s.setVolume(Math.round(volume));
+      return send(res, 200, { ok: true });
+    }
+
+    // ---- Spotify ----
+    if (p === "/spotify/auth/status") {
+      return send(res, 200, { authenticated: !!spotifyTokens });
+    }
+
+    if (p === "/spotify/auth/login") {
+      if (!SPOTIFY_CLIENT_ID) return send(res, 400, { error: "SPOTIFY_CLIENT_ID ikke konfigurert i .env" });
+      spotifyOauthState = crypto.randomBytes(16).toString("hex");
+      const scopes = "playlist-read-private user-read-playback-state user-modify-playback-state user-read-currently-playing";
+      const authUrl = "https://accounts.spotify.com/authorize?" + new URLSearchParams({
+        response_type: "code", client_id: SPOTIFY_CLIENT_ID,
+        scope: scopes, redirect_uri: SPOTIFY_REDIRECT_URI, state: spotifyOauthState,
+      }).toString();
+      res.writeHead(302, { Location: authUrl });
+      return res.end();
+    }
+
+    if (p === "/spotify/auth/callback") {
+      const code = url.searchParams.get("code");
+      if (url.searchParams.get("state") !== spotifyOauthState) return send(res, 400, "Ugyldig state");
+      if (!code) return send(res, 400, "Mangler code");
+      const r = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: "Basic " + Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString("base64"),
+        },
+        body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: SPOTIFY_REDIRECT_URI }).toString(),
+      });
+      if (!r.ok) throw new Error(`Spotify token exchange: ${r.status}`);
+      const data = await r.json();
+      spotifyTokens = { access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + (data.expires_in - 60) * 1000 };
+      persistSpotifyTokens();
+      res.writeHead(302, { Location: "/" });
+      return res.end();
+    }
+
+    if (p === "/spotify/auth/logout") {
+      spotifyTokens = null;
+      try { fs.unlinkSync(SPOTIFY_TOKEN_FILE); } catch {}
+      return send(res, 200, { ok: true });
+    }
+
+    if (p === "/spotify/me/playlists") {
+      const data = await spotifyFetch("GET", "/me/playlists?limit=30");
+      return send(res, 200, data);
+    }
+
+    if (p === "/spotify/search") {
+      const q = url.searchParams.get("q");
+      if (!q) return send(res, 400, { error: "Mangler q" });
+      const data = await spotifyFetch("GET", `/search?q=${encodeURIComponent(q)}&type=playlist,album&limit=12`);
+      return send(res, 200, data);
+    }
+
+    if (p === "/spotify/devices") {
+      const data = await spotifyFetch("GET", "/me/player/devices");
+      return send(res, 200, data);
+    }
+
+    if (p === "/spotify/player") {
+      const data = await spotifyFetch("GET", "/me/player");
+      return send(res, 200, data);
+    }
+
+    if (p === "/spotify/play" && req.method === "POST") {
+      const { context_uri, device_id } = await readBody(req);
+      const qs = device_id ? `?device_id=${device_id}` : "";
+      await spotifyFetch("PUT", `/me/player/play${qs}`, { context_uri });
+      return send(res, 200, { ok: true });
+    }
+
+    if (p === "/spotify/pause" && req.method === "POST") {
+      const { device_id, resume } = await readBody(req);
+      const qs = device_id ? `?device_id=${device_id}` : "";
+      await spotifyFetch("PUT", resume ? `/me/player/play${qs}` : `/me/player/pause${qs}`, resume ? {} : undefined);
       return send(res, 200, { ok: true });
     }
 
