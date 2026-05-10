@@ -2150,6 +2150,8 @@ function SonosModule() {
         if (spk?.state === "playing") {
           control(ip, "pause");
           setPlayingStation(null);
+          setSpotifyTrack(null);
+          setSpotifyImage(null);
         }
       } else {
         next.add(ip);
