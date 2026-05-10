@@ -700,6 +700,44 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true });
     }
 
+    if (p === "/sonos/spotify" && req.method === "POST") {
+      const { ip, uri, name } = await readBody(req);
+      const { Sonos } = await import("sonos");
+      const s = new Sonos(ip);
+
+      const buildTrackMeta = (trackUri, title) => {
+        const enc = encodeURIComponent(trackUri).replace(/%3A/gi, "%3a");
+        const safe = (title || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        const sonosUri = `x-sonos-spotify:${enc}?sid=9&flags=8232&sn=1`;
+        const meta = `<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:r="urn:schemas-rinconnetworks-com:metadata-1-0/" xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"><item id="10032028${enc}" parentID="00020000track:" restricted="true"><dc:title>${safe}</dc:title><upnp:class>object.item.audioItem.musicTrack</upnp:class><desc id="cdudn" nameSpace="urn:schemas-rinconnetworks-com:metadata-1-0/">SA_RINCON2311_X_#Svc2311-0-Token</desc></item></DIDL-Lite>`;
+        return { sonosUri, meta };
+      };
+
+      if (uri.startsWith("spotify:track")) {
+        const { sonosUri, meta } = buildTrackMeta(uri, name);
+        await s.setAVTransportURI({ uri: sonosUri, metadata: meta });
+        await s.play();
+      } else {
+        // Playlist or album: fetch tracks via Spotify API and queue them
+        const type = uri.startsWith("spotify:album") ? "albums" : "playlists";
+        const id = uri.split(":").pop();
+        const data = await spotifyFetch("GET", `/${type}/${id}/tracks?limit=50&fields=items(track(uri,name,artists))`);
+        const tracks = (data?.items || []).map(i => i.track).filter(t => t?.uri);
+        if (!tracks.length) return send(res, 404, { error: "Ingen spor funnet i spillelisten" });
+        await s.flush();
+        const first = tracks[0];
+        const { sonosUri, meta } = buildTrackMeta(first.uri, first.name);
+        await s.setAVTransportURI({ uri: sonosUri, metadata: meta });
+        // Queue remaining tracks
+        for (const t of tracks.slice(1)) {
+          const { sonosUri: u, meta: m } = buildTrackMeta(t.uri, t.name);
+          await s.queue({ uri: u, metadata: m });
+        }
+        await s.play();
+      }
+      return send(res, 200, { ok: true });
+    }
+
     if (p === "/sonos/control" && req.method === "POST") {
       const { ip, action, volume } = await readBody(req);
       const { Sonos } = await import("sonos");
@@ -720,10 +758,11 @@ const server = http.createServer(async (req, res) => {
     if (p === "/spotify/auth/login") {
       if (!SPOTIFY_CLIENT_ID) return send(res, 400, { error: "SPOTIFY_CLIENT_ID ikke konfigurert i .env" });
       spotifyOauthState = crypto.randomBytes(16).toString("hex");
-      const scopes = "playlist-read-private user-read-playback-state user-modify-playback-state user-read-currently-playing";
+      const scopes = "playlist-read-private playlist-read-collaborative user-read-playback-state user-modify-playback-state user-read-currently-playing";
       const authUrl = "https://accounts.spotify.com/authorize?" + new URLSearchParams({
         response_type: "code", client_id: SPOTIFY_CLIENT_ID,
         scope: scopes, redirect_uri: SPOTIFY_REDIRECT_URI, state: spotifyOauthState,
+        show_dialog: "true",
       }).toString();
       res.writeHead(302, { Location: authUrl });
       return res.end();
@@ -743,7 +782,7 @@ const server = http.createServer(async (req, res) => {
       });
       if (!r.ok) throw new Error(`Spotify token exchange: ${r.status}`);
       const data = await r.json();
-      spotifyTokens = { access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + (data.expires_in - 60) * 1000 };
+      spotifyTokens = { access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + (data.expires_in - 60) * 1000, scope: data.scope };
       persistSpotifyTokens();
       res.writeHead(302, { Location: "/" });
       return res.end();
@@ -763,7 +802,7 @@ const server = http.createServer(async (req, res) => {
     if (p === "/spotify/search") {
       const q = url.searchParams.get("q");
       if (!q) return send(res, 400, { error: "Mangler q" });
-      const data = await spotifyFetch("GET", `/search?q=${encodeURIComponent(q)}&type=playlist,album,track&limit=8`);
+      const data = await spotifyFetch("GET", `/search?q=${encodeURIComponent(q)}&type=album,track&limit=10`);
       return send(res, 200, data);
     }
 
@@ -800,16 +839,19 @@ const server = http.createServer(async (req, res) => {
       const charger = ZAPTEC_CHARGER_ID
         ? chargers.Data.find(c => c.Id === ZAPTEC_CHARGER_ID) || chargers.Data[0]
         : chargers.Data[0];
+      const stateArr = await zaptecFetch("GET", `/api/chargers/${charger.Id}/state`);
+      const s = {};
+      (stateArr || []).forEach(x => { s[x.StateId] = x.ValueAsString; });
       return send(res, 200, {
         chargerId: charger.Id,
         name: charger.Name || "Zaptec-lader",
-        mode: charger.OperatingMode ?? 1,
+        mode: parseInt(s[710] ?? charger.OperatingMode ?? 1),
         isOnline: charger.IsOnline ?? false,
-        sessionEnergy: 0,
-        currentL1: 0,
-        currentL2: 0,
-        currentL3: 0,
-        voltage: 230,
+        powerW: parseFloat(s[513] || 0),
+        sessionEnergy: parseFloat(s[553] || 0),
+        currentL1: parseFloat(s[507] || 0),
+        currentL2: parseFloat(s[508] || 0),
+        currentL3: parseFloat(s[509] || 0),
       });
     }
 
