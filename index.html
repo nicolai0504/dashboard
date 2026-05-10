@@ -2134,6 +2134,13 @@ function SonosModule() {
 
   useEffect(() => { load(); const t = setInterval(load, 10000); return () => clearInterval(t); }, [load]);
 
+  useEffect(() => {
+    if (!spotifyTrack && !spotifyImage) return;
+    if (speakers.length === 0) return;
+    const anyPlaying = speakers.some(s => s.state === "playing");
+    if (!anyPlaying) { setSpotifyTrack(null); setSpotifyImage(null); }
+  }, [speakers]);
+
   const toggleSpeaker = (ip) => {
     setSelectedIps(prev => {
       const next = new Set(prev);
@@ -2152,6 +2159,8 @@ function SonosModule() {
   };
 
   const playRadio = async (station) => {
+    setSpotifyTrack(null);
+    setSpotifyImage(null);
     setBusy(true);
     setPlayingStation(station.name);
     const targets = selectedIps.size > 0 ? [...selectedIps] : speakers.map(s => s.ip);
