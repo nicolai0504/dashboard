@@ -363,6 +363,10 @@
   /* Zone popup */
   .zone-popup-backdrop { position: fixed; inset: 0; background: rgba(29,27,24,0.45); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .zone-popup { background: var(--surface); border-radius: var(--radius-lg); max-width: 400px; width: 100%; box-shadow: var(--shadow-lg); overflow: hidden; max-height: 85dvh; overflow-y: auto; }
+  .zone-popup.has-camera { max-width: 720px; }
+  .zone-popup-body { display: flex; gap: 0; }
+  .zone-popup-controls { flex: 1; min-width: 0; }
+  .zone-popup-camera-col { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; padding: 16px 20px; border-left: 1px solid var(--line); gap: 8px; }
   .zone-popup-head { padding: 18px 20px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 1; }
   .zone-popup-title { font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 22px; letter-spacing: -0.02em; line-height: 1; }
   .zone-popup-section { padding: 16px 20px; border-bottom: 1px solid var(--line); }
@@ -612,6 +616,27 @@
   .zaptec-action.stop { background: var(--surface-soft); color: var(--ink); }
   .zaptec-action:disabled { opacity: 0.45; cursor: not-allowed; }
   .zaptec-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+
+  /* Audi module */
+  .audi-battery-row { display: flex; align-items: flex-end; gap: 8px; margin-top: 4px; }
+  .audi-pct { font-family: var(--font-display); font-style: italic; font-size: 40px; font-weight: 300; letter-spacing: -0.04em; line-height: 1; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
+  .audi-pct em { color: var(--moss); font-style: normal; }
+  .audi-meta { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; }
+  .audi-range { font-size: 12px; font-weight: 500; color: var(--ink-soft); }
+  .audi-charging { font-size: 11px; color: var(--moss); }
+  .audi-plug { font-size: 11px; color: var(--ink-mute); }
+  .audi-bar-wrap { margin-top: 8px; height: 6px; background: var(--surface-deep); border-radius: 99px; overflow: hidden; }
+  .audi-bar { height: 100%; border-radius: 99px; transition: width .6s ease; }
+  .audi-divider { border: none; border-top: 1px solid var(--line); margin: 10px 0; }
+  .audi-climate-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .audi-climate-label { font-size: 12px; color: var(--ink-soft); }
+  .audi-climate-state { font-size: 11px; color: var(--terracotta); font-weight: 500; }
+  .audi-temp-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .audi-temp-btn { flex: 1; padding: 10px 8px; border: none; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .2s; }
+  .audi-temp-btn.start { background: var(--terracotta); color: #fff; }
+  .audi-temp-btn.stop  { background: var(--surface-soft); color: var(--ink); }
+  .audi-temp-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .audi-temp-input { width: 52px; padding: 9px 6px; border: 1.5px solid var(--line); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; text-align: center; background: var(--surface-soft); color: var(--ink); outline: none; }
 
   .colophon { display: none; }
   .colophon em { font-family: var(--font-display); font-style: italic; font-weight: 300; text-transform: none; letter-spacing: 0; font-size: 11px; color: var(--ink-soft); }
@@ -1246,6 +1271,7 @@ const MODULE_TYPES = {
   roborock: { title: "Støvsuger", desc: "Status og styring av robotstøvsuger", defaultSpan: 1 },
   spotify: { title: "Spotify", desc: "Spill av spillelister og søk i musikk", defaultSpan: 1 },
   zaptec: { title: "El-billader", desc: "Autoriser og overvåk Zaptec-lading", defaultSpan: 1 },
+  audi: { title: "Audi", desc: "Batteri, rekkevidde og klimastyring", defaultSpan: 1 },
 };
 
 function HanModule({ devices, prefs, globalPrefs, isEdit, settingsOpen }) {
@@ -1688,11 +1714,6 @@ function CameraModule({ globalPrefs }) {
   const [tick, setTick] = useState(0);
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    const t = setInterval(() => { setTick(n => n + 1); setErrors({}); }, 60000);
-    return () => clearInterval(t);
-  }, []);
-
   const cameraIds = globalPrefs.ringCameraIds?.length > 0
     ? globalPrefs.ringCameraIds
     : globalPrefs.ringCameraId ? [globalPrefs.ringCameraId] : [];
@@ -1702,13 +1723,18 @@ function CameraModule({ globalPrefs }) {
   const multi = cameraIds.length > 1;
   const headerLabel = multi ? "Kameraer" : (cameraNames[cameraIds[0]] || globalPrefs.ringCameraName || "Kamera");
 
+  const refresh = () => { setTick(n => n + 1); setErrors({}); };
+
   return (
     <>
       <div className="module-head">
         <div className="module-title">{headerLabel}</div>
-        <span className="module-sub" style={{ background: configured ? "var(--moss)" : "var(--ink-mute)", color: "var(--paper)", padding: "2px 6px", letterSpacing: "0.2em" }}>
-          {configured ? "Live" : "Ikke konfigurert"}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {configured && <button onClick={refresh} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-mute)", fontSize: 13, padding: "2px 4px", lineHeight: 1 }} title="Oppdater">↻</button>}
+          <span className="module-sub" style={{ background: configured ? "var(--moss)" : "var(--ink-mute)", color: "var(--paper)", padding: "2px 6px", letterSpacing: "0.2em" }}>
+            {configured ? "Live" : "Ikke konfigurert"}
+          </span>
+        </div>
       </div>
       {!configured ? (
         <div className="camera-offline">Velg kamera i innstillingene</div>
@@ -1971,38 +1997,104 @@ function ZoneTempControl({ device, onSetCapability }) {
   );
 }
 
-function ZonePopup({ zone, devices, onClose, onToggle, onSetCapability }) {
+function ZonePopup({ zone, devices, onClose, onToggle, onSetCapability, globalPrefs }) {
   const lights = devices.filter(d => (d.capabilities || []).includes("onoff") && (d.class === "light" || (d.capabilities || []).includes("dim")));
   const thermostats = devices.filter(d => (d.capabilities || []).includes("target_temperature"));
+  const cameraId = globalPrefs?.zoneCameraMap?.[zone.id];
+  const [snapTick, setSnapTick] = useState(() => Date.now());
 
   return (
     <div className="zone-popup-backdrop" onClick={onClose}>
-      <div className="zone-popup" onClick={e => e.stopPropagation()}>
+      <div className={`zone-popup${cameraId ? " has-camera" : ""}`} onClick={e => e.stopPropagation()}>
         <div className="zone-popup-head">
           <div className="zone-popup-title">{zone.name}</div>
           <button className="icon-btn" onClick={onClose}>✕</button>
         </div>
-        {lights.length > 0 && (
-          <div className="zone-popup-section">
-            <div className="zone-popup-section-label">Lys</div>
-            {lights.map(d => <ZoneLightControl key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} />)}
+        <div className="zone-popup-body">
+          <div className="zone-popup-controls">
+            {lights.length > 0 && (
+              <div className="zone-popup-section">
+                <div className="zone-popup-section-label">Lys</div>
+                {lights.map(d => <ZoneLightControl key={d.id} device={d} onToggle={onToggle} onSetCapability={onSetCapability} />)}
+              </div>
+            )}
+            {thermostats.length > 0 && (
+              <div className="zone-popup-section">
+                <div className="zone-popup-section-label">Temperatur</div>
+                {thermostats.map(d => <ZoneTempControl key={d.id} device={d} onSetCapability={onSetCapability} />)}
+              </div>
+            )}
+            {lights.length === 0 && thermostats.length === 0 && (
+              <div className="empty">Ingen styrbare enheter i dette rommet</div>
+            )}
           </div>
-        )}
-        {thermostats.length > 0 && (
-          <div className="zone-popup-section">
-            <div className="zone-popup-section-label">Temperatur</div>
-            {thermostats.map(d => <ZoneTempControl key={d.id} device={d} onSetCapability={onSetCapability} />)}
-          </div>
-        )}
-        {lights.length === 0 && thermostats.length === 0 && (
-          <div className="empty">Ingen styrbare enheter i dette rommet</div>
-        )}
+          {cameraId && (
+            <div className="zone-popup-camera-col">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div className="zone-popup-section-label" style={{ marginBottom: 0 }}>Kamera</div>
+                <button className="icon-btn" style={{ fontSize: 11 }} onClick={() => setSnapTick(Date.now())}>↺</button>
+              </div>
+              <img
+                src={`/camera/ring/${cameraId}?t=${snapTick}`}
+                alt="Snapshot"
+                style={{ width: "100%", borderRadius: "var(--radius-sm)", display: "block", background: "var(--surface-deep)", aspectRatio: "16/9", objectFit: "cover" }}
+                onError={e => { e.target.style.display = "none"; }}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function ZonesOverviewModule({ tree, devicesByZone, onToggle, onSetCapability }) {
+function ZonesModuleSettings({ tree, devicesByZone, globalPrefs, onUpdate }) {
+  const [cameras, setCameras] = useState(null);
+  useEffect(() => {
+    fetch("/camera/ring").then(r => r.ok ? r.json() : null)
+      .then(data => setCameras(data || []))
+      .catch(() => setCameras([]));
+  }, []);
+
+  const flat = [];
+  const collect = (zone) => {
+    const direct = devicesByZone[zone.id] || [];
+    const isContainer = (zone.children || []).length > 0;
+    if (direct.length > 0 && !isContainer) flat.push(zone);
+    (zone.children || []).forEach(c => collect(c));
+  };
+  tree.forEach(z => collect(z));
+
+  const map = globalPrefs.zoneCameraMap || {};
+  const setCamera = (zoneId, cameraId) => {
+    const next = { ...map };
+    if (cameraId) next[zoneId] = cameraId;
+    else delete next[zoneId];
+    onUpdate({ ...globalPrefs, zoneCameraMap: next });
+  };
+
+  if (!cameras) return <div className="settings-hint">Henter kameraer…</div>;
+
+  return (
+    <div className="module-settings-drawer">
+      <div className="settings-title">Kamera per rom</div>
+      {cameras.length === 0 && <div className="settings-hint">Ingen Ring-kameraer konfigurert.</div>}
+      {cameras.length > 0 && flat.map(zone => (
+        <div key={zone.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0", gap: 8 }}>
+          <span style={{ fontSize: 13, flex: 1 }}>{zone.name}</span>
+          <select className="settings-select" style={{ width: "auto", minWidth: 100 }}
+            value={map[zone.id] || ""}
+            onChange={e => setCamera(zone.id, e.target.value)}>
+            <option value="">—</option>
+            {cameras.map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+          </select>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ZonesOverviewModule({ tree, devicesByZone, onToggle, onSetCapability, globalPrefs }) {
   const [selected, setSelected] = useState(null);
   const flat = [];
   const collect = (zone) => {
@@ -2022,6 +2114,7 @@ function ZonesOverviewModule({ tree, devicesByZone, onToggle, onSetCapability })
           onClose={() => setSelected(null)}
           onToggle={onToggle}
           onSetCapability={onSetCapability}
+          globalPrefs={globalPrefs}
         />
       )}
       {flat.length === 0 ? (
@@ -2060,7 +2153,7 @@ function ZonesOverviewModule({ tree, devicesByZone, onToggle, onSetCapability })
   );
 }
 
-function ZonesSimpleModule({ tree, devicesByZone, onToggle, onSetCapability }) {
+function ZonesSimpleModule({ tree, devicesByZone, onToggle, onSetCapability, globalPrefs }) {
   const [selected, setSelected] = useState(null);
   const flat = [];
   const collect = (zone) => {
@@ -2080,6 +2173,7 @@ function ZonesSimpleModule({ tree, devicesByZone, onToggle, onSetCapability }) {
           onClose={() => setSelected(null)}
           onToggle={onToggle}
           onSetCapability={onSetCapability}
+          globalPrefs={globalPrefs}
         />
       )}
       {flat.length === 0 ? (
@@ -2231,6 +2325,106 @@ function SonosModule() {
 
       {spotifyOpen && <SpotifyOverlay onClose={() => setSpotifyOpen(false)} sonosIps={[...selectedIps]}
         onNowPlaying={(track, image) => { setSpotifyTrack(track); setSpotifyImage(image); }} />}
+    </div>
+  );
+}
+
+// ==================== AUDI MODULE ====================
+function AudiModule() {
+  const [data, setData]   = useState(null);
+  const [error, setError] = useState(null);
+  const [busy, setBusy]   = useState(false);
+  const [temp, setTemp]   = useState(21);
+
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch("/audi/status");
+      if (!r.ok) { setError((await r.json()).error || `Feil ${r.status}`); return; }
+      setData(await r.json());
+      setError(null);
+    } catch (e) { setError(e.message); }
+  }, []);
+
+  useEffect(() => {
+    load();
+    const t = setInterval(load, data?.climateOn ? 30000 : 60000);
+    return () => clearInterval(t);
+  }, [load, data?.climateOn]);
+
+  useEffect(() => {
+    if (data?.climateTemp != null) setTemp(data.climateTemp);
+  }, [data?.climateTemp]);
+
+  const climateStart = async () => {
+    setBusy(true);
+    try {
+      await fetch("/audi/climate/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ temperature: temp }) });
+      setTimeout(load, 4000);
+    } catch {}
+    setBusy(false);
+  };
+
+  const climateStop = async () => {
+    setBusy(true);
+    try {
+      await fetch("/audi/climate/stop", { method: "POST" });
+      setTimeout(load, 4000);
+    } catch {}
+    setBusy(false);
+  };
+
+  if (error) return <div className="empty" style={{ color: "var(--red)", fontSize: 11 }}>{error}</div>;
+  if (!data)  return <div className="empty">Henter bildata…</div>;
+
+  const pct      = data.batteryPct ?? 0;
+  const barColor = pct > 20 ? "var(--moss)" : "var(--red)";
+  const chargingLabel = data.chargingState === "charging"
+    ? `Lader ${data.chargeKw != null ? data.chargeKw.toFixed(1) + " kW" : ""}`.trim()
+    : data.chargingState === "readyForCharging" ? "Klar for lading"
+    : data.chargingState === "conserving" ? "Vedlikeholder"
+    : null;
+
+  return (
+    <div>
+      <div className="audi-battery-row">
+        <div className="audi-pct"><em>{pct}</em>%</div>
+        <div className="audi-meta">
+          {data.rangeKm != null && <span className="audi-range">{Math.round(data.rangeKm)} km rekkevidde</span>}
+          {chargingLabel && <span className="audi-charging">⚡ {chargingLabel}</span>}
+          {!data.plugConnected && <span className="audi-plug">Ikke tilkoblet</span>}
+          {data.plugConnected && !chargingLabel && <span className="audi-plug">Tilkoblet</span>}
+        </div>
+      </div>
+      <div className="audi-bar-wrap">
+        <div className="audi-bar" style={{ width: `${pct}%`, background: barColor }} />
+      </div>
+
+      <hr className="audi-divider" />
+
+      <div className="audi-climate-row">
+        <div>
+          <div className="audi-climate-label">Klimaanlegg</div>
+          {data.climateOn && (
+            <div className="audi-climate-state">
+              ● Aktiv{data.climateState === "ventilation" ? " (ventilasjon)" : ""}
+              {data.climateMinutes > 0 && ` — ${data.climateMinutes} min igjen`}
+            </div>
+          )}
+        </div>
+        {data.climateTemp != null && <span style={{ fontSize: 12, color: "var(--ink-mute)" }}>{data.climateTemp}°C</span>}
+      </div>
+      <div className="audi-temp-row">
+        <input className="audi-temp-input" type="number" min={16} max={29} value={temp}
+          onChange={e => setTemp(+e.target.value)} />
+        <button className="audi-temp-btn start" onClick={climateStart} disabled={busy || (data.climateOn && temp === data.climateTemp)}>
+          {data.climateOn && temp !== data.climateTemp ? "Oppdater" : "Start klima"}
+        </button>
+        {data.climateOn && (
+          <button className="audi-temp-btn stop" onClick={climateStop} disabled={busy}>
+            Stopp
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -2597,7 +2791,7 @@ function MasonryGrid({ modules, renderContent }) {
 }
 
 // ==================== HOME VIEW ====================
-function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPrefs, onUpdateGlobalPrefs, onSetCapability, onToggle, onUpdatePrefs, onRunFlow, isEdit }) {
+function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPrefs, onUpdateGlobalPrefs, onSetCapability, onToggle, onUpdatePrefs, onRunFlow, isEdit, profileName = 'default' }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [settingsForIdx, setSettingsForIdx] = useState(null);
 
@@ -2607,7 +2801,9 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
   const [draggingIdx, setDraggingIdx] = useState(null);
   const [dropTargetIdx, setDropTargetIdx] = useState(null);
 
-  const modules = globalPrefs.dashboardModules || [
+  const isDefaultProfile = profileName === 'default';
+
+  const DEFAULT_MODULES = [
     { id: "m1", type: "hanweather" },
     { id: "m3", type: "transit" },
     { id: "m4", type: "flows" },
@@ -2615,8 +2811,18 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
     { id: "m6", type: "zones" },
   ];
 
+  const modules = isDefaultProfile
+    ? (globalPrefs.dashboardModules || DEFAULT_MODULES)
+    : (globalPrefs.profiles?.[profileName]?.modules || globalPrefs.dashboardModules || DEFAULT_MODULES);
+
   const updateModules = (newMods) => {
-    onUpdateGlobalPrefs({ ...globalPrefs, dashboardModules: newMods });
+    if (isDefaultProfile) {
+      onUpdateGlobalPrefs({ ...globalPrefs, dashboardModules: newMods });
+    } else {
+      const profiles = { ...(globalPrefs.profiles || {}) };
+      profiles[profileName] = { ...profiles[profileName], modules: newMods };
+      onUpdateGlobalPrefs({ ...globalPrefs, profiles });
+    }
   };
 
   const handleMove = (idx, dir) => {
@@ -2686,12 +2892,13 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
       case "transit": return <TransitModule />;
       case "flows": return <FlowsModule flows={flows} globalPrefs={globalPrefs} onRunFlow={onRunFlow} />;
       case "favorites": return <FavoritesModule devices={devices} globalPrefs={globalPrefs} onToggle={onToggle} onSetCapability={onSetCapability} prefs={prefs} onUpdatePrefs={onUpdatePrefs} />;
-      case "zones": return <ZonesOverviewModule tree={tree} devicesByZone={devicesByZone} onToggle={onToggle} onSetCapability={onSetCapability} />;
-      case "zonesimple": return <ZonesSimpleModule tree={tree} devicesByZone={devicesByZone} onToggle={onToggle} onSetCapability={onSetCapability} />;
+      case "zones": return <ZonesOverviewModule tree={tree} devicesByZone={devicesByZone} onToggle={onToggle} onSetCapability={onSetCapability} globalPrefs={globalPrefs} />;
+      case "zonesimple": return <ZonesSimpleModule tree={tree} devicesByZone={devicesByZone} onToggle={onToggle} onSetCapability={onSetCapability} globalPrefs={globalPrefs} />;
       case "sonos": return <SonosModule />;
       case "roborock": return <RoboRockModule devices={devices} flows={flows} globalPrefs={globalPrefs} onSetCapability={onSetCapability} onRunFlow={onRunFlow} />;
       case "spotify": return <SpotifyModule />;
       case "zaptec": return <ZaptecModule />;
+      case "audi": return <AudiModule />;
       default: return <div className="empty">Ukjent modul</div>;
     }
   };
@@ -2705,7 +2912,8 @@ function HomeView({ devices, flows, zones, tree, devicesByZone, prefs, globalPre
       case "weather": return <WeatherModuleSettings devices={devices} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "flows": return <FlowsModuleSettings flows={flows} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "favorites": return <FavoritesModuleSettings devices={devices} zones={zones} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
-      case "zones": return <div className="settings-hint">Denne modulen viser automatisk alle rom med enheter.</div>;
+      case "zones":
+      case "zonesimple": return <ZonesModuleSettings tree={tree} devicesByZone={devicesByZone} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       case "roborock": return <RoboRockModuleSettings devices={devices} flows={flows} globalPrefs={globalPrefs} onUpdate={onUpdateGlobalPrefs} />;
       default: return null;
     }
@@ -3128,6 +3336,7 @@ function FlowRow({ flow, onRun }) {
 
 // ==================== DASHBOARD ====================
 function Dashboard({ homeyName, onLogout }) {
+  const profileName = useMemo(() => new URLSearchParams(window.location.search).get('profile') || 'default', []);
   const [devices, setDevices] = useState([]);
   const [flows, setFlows] = useState([]);
   const [zones, setZones] = useState({});
@@ -3333,7 +3542,10 @@ function Dashboard({ homeyName, onLogout }) {
       <header className="masthead">
         <div className="brand">
           <div className="brand-mark">Hjem<em>et</em></div>
-          <div className="brand-tag">{lastRefresh ? lastRefresh.toLocaleDateString("no-NO", { weekday: "long", day: "numeric", month: "long" }) : "Laster…"}</div>
+          <div className="brand-tag">
+            {lastRefresh ? lastRefresh.toLocaleDateString("no-NO", { weekday: "long", day: "numeric", month: "long" }) : "Laster…"}
+            {profileName !== 'default' && <span style={{ marginLeft: 8, padding: "1px 7px", borderRadius: 99, background: "var(--surface-soft)", color: "var(--ink-soft)", fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>{profileName}</span>}
+          </div>
         </div>
         <ClockDisplay />
         <div className="masthead-right">
@@ -3357,7 +3569,7 @@ function Dashboard({ homeyName, onLogout }) {
           prefs={prefs} globalPrefs={globalPrefs} onUpdateGlobalPrefs={handleUpdateGlobalPrefs}
           onSetCapability={handleSetCapability} onToggle={handleToggle}
           onUpdatePrefs={handleUpdatePrefs} onRunFlow={handleRunFlow}
-          isEdit={isEditHome}
+          isEdit={isEditHome} profileName={profileName}
         />
       </div>
 

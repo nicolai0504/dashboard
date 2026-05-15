@@ -38,6 +38,12 @@ const ZAPTEC_USERNAME = process.env.ZAPTEC_USERNAME;
 const ZAPTEC_PASSWORD = process.env.ZAPTEC_PASSWORD;
 const ZAPTEC_CHARGER_ID = process.env.ZAPTEC_CHARGER_ID;
 
+const AUDI_USERNAME = process.env.AUDI_USERNAME;
+const AUDI_PASSWORD = process.env.AUDI_PASSWORD;
+const AUDI_VIN      = process.env.AUDI_VIN;
+const AUDI_COUNTRY  = (process.env.AUDI_COUNTRY || "NO").toUpperCase();
+const AUDI_LANG     = "nb";
+
 // ---- Ring API (lazy-init) ----
 let _ringApi = null;
 async function getRingApi() {
@@ -116,6 +122,167 @@ function todayKey() {
 
 const calCache = new Map(); // url → { data, expires }
 
+// ---- Audi Connect ----
+const AUDI_CLIENT_ID  = "f4d0934f-32bf-4ce4-b3c4-699a7049ad26@apps_vw-dilab_com";
+const AUDI_IDK_BASE   = "https://identity.vwgroup.io";
+const AUDI_TOKEN_EP   = "https://emea.bff.cariad.digital/login/v1/idk/token";
+const AUDI_AZS_BASE   = "https://emea.bff.cariad.digital/login/v1/audi";
+const AUDI_VEHICLE_BASE = "https://emea.bff.cariad.digital/vehicle/v1";
+const AUDI_HEADERS    = { "User-Agent": "Android/4.31.0 (Build 800341641.root project 'myaudi_android'.ext.buildTime) Android/13", "X-App-Version": "4.31.0", "X-App-Name": "myAudi", "Accept": "text/html,application/json", "Accept-Charset": "utf-8" };
+let _audiSession = null;
+
+function _audiCookies(headers) {
+  const list = typeof headers.getSetCookie === "function" ? headers.getSetCookie() : (headers.get("set-cookie") ? [headers.get("set-cookie")] : []);
+  const jar = {};
+  for (const c of list) { const [kv] = c.split(";"); const eq = kv.indexOf("="); if (eq > 0) jar[kv.slice(0, eq).trim()] = kv.slice(eq + 1).trim(); }
+  return jar;
+}
+function _cookieStr(jar) { return Object.entries(jar).map(([k, v]) => `${k}=${v}`).join("; "); }
+
+function _hiddenInputs(html) {
+  const inputs = {}; const re = /<input[^>]+>/gi; let m;
+  while ((m = re.exec(html)) !== null) {
+    if (!/type=['"]?hidden/i.test(m[0])) continue;
+    const nm = m[0].match(/name=['"]([^'"]+)['"]/i); const vm = m[0].match(/value=['"]([^'"]*)['"]/i);
+    if (nm) inputs[nm[1]] = vm ? vm[1] : "";
+  }
+  return inputs;
+}
+
+function _parseIDK(html) {
+  const str  = (key, src) => (src || html).match(new RegExp(`["']${key}["']\\s*:\\s*["']([^"']+)["']`))?.[1] || null;
+  const hmac = str("hmac"); const relay = str("relayState"); const post = str("postAction");
+  const csrf = html.match(/csrf_token\s*:\s*'([^']+)'/)?.[1] || html.match(/csrf_token\s*:\s*"([^"]+)"/)?.[1];
+  const csrfParam = html.match(/csrf_parameterName\s*:\s*['"]([^'"]+)['"]/)?.[1] || "_csrf";
+  return { templateModel: { hmac, relayState: relay, postAction: post }, csrf_token: csrf, csrf_parameterName: csrfParam };
+}
+
+async function audiLogin() {
+  const cookies = {};
+  const verifier   = crypto.randomBytes(32).toString("base64url");
+  const challenge  = crypto.createHash("sha256").update(verifier).digest("base64url");
+  const oauthState = crypto.randomBytes(16).toString("hex");
+
+  // Step 1: Get email login page
+  const authUrl = new URL(`${AUDI_IDK_BASE}/oidc/v1/authorize`);
+  for (const [k, v] of Object.entries({ response_type: "code", client_id: AUDI_CLIENT_ID, redirect_uri: "myaudi:///", scope: "openid profile mbb", state: oauthState, prompt: "login", code_challenge: challenge, code_challenge_method: "S256" }))
+    authUrl.searchParams.set(k, v);
+
+  let resp = await fetch(authUrl.toString(), { headers: AUDI_HEADERS, redirect: "manual" });
+  let base = AUDI_IDK_BASE;
+  while (resp.status >= 300 && resp.status < 400) {
+    Object.assign(cookies, _audiCookies(resp.headers));
+    base = new URL(resp.headers.get("location"), base).toString();
+    resp = await fetch(base, { headers: { ...AUDI_HEADERS, Cookie: _cookieStr(cookies) }, redirect: "manual" });
+  }
+  Object.assign(cookies, _audiCookies(resp.headers));
+  const emailHtml = await resp.text();
+
+  // Parse email form data from window._IDK or hidden inputs
+  const emailIdk = _parseIDK(emailHtml);
+  const emailHmac = emailIdk?.templateModel?.hmac || emailHtml.match(/"hmac"\s*:\s*"([^"]+)"/)?.[1];
+  const emailCsrf = emailIdk?.csrf_token || emailHtml.match(/"csrf_token"\s*:\s*"([^"]+)"/)?.[1];
+  const emailCsrfParam = emailIdk?.csrf_parameterName || "_csrf";
+  const emailRelay = emailIdk?.templateModel?.relayState || emailHtml.match(/"relayState"\s*:\s*"([^"]+)"/)?.[1];
+  if (!emailHmac) throw new Error("Audi: HMAC ikke funnet på e-post-siden");
+
+  // Step 2: POST email
+  const emailBody = new URLSearchParams({
+    ..._hiddenInputs(emailHtml),
+    email: AUDI_USERNAME, hmac: emailHmac,
+    ...(emailCsrf ? { [emailCsrfParam]: emailCsrf } : {}),
+    ...(emailRelay ? { relayState: emailRelay } : {}),
+  }).toString();
+  let emailResp = await fetch(`${AUDI_IDK_BASE}/signin-service/v1/${AUDI_CLIENT_ID}/login/identifier`, {
+    method: "POST", redirect: "manual",
+    headers: { ...AUDI_HEADERS, "Content-Type": "application/x-www-form-urlencoded", Cookie: _cookieStr(cookies) },
+    body: emailBody,
+  });
+  Object.assign(cookies, _audiCookies(emailResp.headers));
+  // Follow redirect to password page
+  while (emailResp.status >= 300 && emailResp.status < 400) {
+    const loc = emailResp.headers.get("location") || "";
+    if (loc.startsWith("myaudi:///")) break;
+    base = new URL(loc, AUDI_IDK_BASE).toString();
+    emailResp = await fetch(base, { headers: { ...AUDI_HEADERS, Cookie: _cookieStr(cookies) }, redirect: "manual" });
+    Object.assign(cookies, _audiCookies(emailResp.headers));
+  }
+  const passHtml = await emailResp.text();
+
+  // Parse password form data from window._IDK
+  const passIdk = _parseIDK(passHtml);
+  const passHmac  = passIdk?.templateModel?.hmac   || passHtml.match(/"hmac"\s*:\s*"([^"]+)"/)?.[1];
+  const passCsrf  = passIdk?.csrf_token             || passHtml.match(/csrf_token\s*:\s*['"]([^'"]+)['"]/)?.[1];
+  const csrfParam = passIdk?.csrf_parameterName     || "_csrf";
+  const passRelay = passIdk?.templateModel?.relayState || passHtml.match(/"relayState"\s*:\s*"([^"]+)"/)?.[1];
+  const postAct   = passIdk?.templateModel?.postAction || "login/authenticate";
+  if (!passHmac) throw new Error("Audi: HMAC ikke funnet på passord-siden");
+
+  // Step 3: POST password
+  const passBody = new URLSearchParams({
+    email: AUDI_USERNAME, password: AUDI_PASSWORD, hmac: passHmac,
+    ...(passCsrf  ? { [csrfParam]: passCsrf }    : {}),
+    ...(passRelay ? { relayState: passRelay }     : {}),
+  }).toString();
+  let passResp = await fetch(`${AUDI_IDK_BASE}/signin-service/v1/${AUDI_CLIENT_ID}/${postAct}`, {
+    method: "POST", redirect: "manual",
+    headers: { ...AUDI_HEADERS, "Content-Type": "application/x-www-form-urlencoded", Cookie: _cookieStr(cookies) },
+    body: passBody,
+  });
+  Object.assign(cookies, _audiCookies(passResp.headers));
+
+  // Step 4: Follow redirects to get auth code
+  let authCode = null; let hops = 0;
+  while (passResp.status >= 300 && passResp.status < 400 && hops++ < 12) {
+    const loc = passResp.headers.get("location") || "";
+    if (loc.startsWith("myaudi:///") || loc.includes("code=")) {
+      try { authCode = new URL(loc.replace("myaudi:///", "https://x.test/")).searchParams.get("code"); } catch {}
+      break;
+    }
+    passResp = await fetch(new URL(loc, AUDI_IDK_BASE).toString(), { headers: { ...AUDI_HEADERS, Cookie: _cookieStr(cookies) }, redirect: "manual" });
+    Object.assign(cookies, _audiCookies(passResp.headers));
+  }
+  if (!authCode) throw new Error("Audi: auth-kode ikke funnet etter innlogging");
+
+  // Step 5: Exchange code → IDK access/refresh tokens
+  const idkResp = await fetch(AUDI_TOKEN_EP, {
+    method: "POST",
+    headers: { ...AUDI_HEADERS, "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ client_id: AUDI_CLIENT_ID, grant_type: "authorization_code", code: authCode, redirect_uri: "myaudi:///", code_verifier: verifier }).toString(),
+  });
+  if (!idkResp.ok) throw new Error(`Audi IDK token: ${idkResp.status} ${await idkResp.text()}`);
+  const idk = await idkResp.json();
+
+  // IDK access_token works directly with vehicle API (AZS tokens lose required jtt claim)
+  _audiSession = {
+    token: idk.access_token,
+    refreshToken: idk.refresh_token,
+    expiry: Date.now() + ((idk.expires_in || 3600) - 60) * 1000,
+  };
+  console.log("Audi: innlogget OK");
+  return _audiSession;
+}
+
+async function ensureAudi() {
+  if (!AUDI_USERNAME) throw new Error("AUDI_USERNAME ikke konfigurert");
+  if (_audiSession && Date.now() < _audiSession.expiry) return _audiSession;
+  if (_audiSession?.refreshToken) {
+    try {
+      const r = await fetch(AUDI_TOKEN_EP, {
+        method: "POST",
+        headers: { ...AUDI_HEADERS, "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ client_id: AUDI_CLIENT_ID, grant_type: "refresh_token", refresh_token: _audiSession.refreshToken }).toString(),
+      });
+      if (r.ok) {
+        const d = await r.json();
+        _audiSession = { token: d.access_token, refreshToken: d.refresh_token || _audiSession.refreshToken, expiry: Date.now() + ((d.expires_in || 3600) - 60) * 1000 };
+        return _audiSession;
+      }
+    } catch {}
+  }
+  return audiLogin();
+}
+
 // ---- Ring doorbell ding listener ----
 let lastDing = null;
 let dingListenersSetup = false;
@@ -180,13 +347,7 @@ async function setupDingListeners() {
       }
     };
 
-    const warmUp = setInterval(async () => {
-      await refreshSnapshots();
-      if (cameras.every(c => snapshotCache[c.id])) {
-        clearInterval(warmUp);
-        setInterval(refreshSnapshots, 30_000);
-      }
-    }, 5000);
+    // Pre-cache one snapshot per camera at startup — no periodic background refresh
     refreshSnapshots();
 
     console.log(`Ring: poller ${cameras.length} kamera(er) for dørklokke-hendelser`);
@@ -612,13 +773,13 @@ const server = http.createServer(async (req, res) => {
       const cameras = await getRingCameras();
       const cam = cameras.find(c => c.id === id);
       if (!cam) return send(res, 404, { error: "Kamera ikke funnet" });
-      // Serve cached snapshot immediately if available (camera can't snapshot while streaming)
+      // Serve from cache if fresh (< 30s) — avoids hammering Ring on rapid requests
       const cached = snapshotCache[id];
-      if (cached) {
+      if (cached && Date.now() - cached.ts < 30_000) {
         res.writeHead(200, { "Content-Type": "image/jpeg", "Cache-Control": "no-store" });
         return res.end(cached.buf);
       }
-      // No cache yet — try live fetch with timeout
+      // Fetch fresh snapshot on demand
       const snapshot = await Promise.race([
         cam.getSnapshot(),
         new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
@@ -876,6 +1037,52 @@ const server = http.createServer(async (req, res) => {
         if (!chargerId) return send(res, 404, { error: "Ingen lader funnet" });
       }
       await zaptecFetch("POST", `/api/chargers/${chargerId}/sendCommand/506`);
+      return send(res, 200, { ok: true });
+    }
+
+    // ---- Audi ----
+    if (p === "/audi/status") {
+      const s = await ensureAudi();
+      const r = await fetch(
+        `${AUDI_VEHICLE_BASE}/vehicles/${AUDI_VIN}/selectivestatus?jobs=charging,climatisation,fuelStatus`,
+        { headers: { ...AUDI_HEADERS, Authorization: `Bearer ${s.token}` } }
+      );
+      if (!r.ok) throw new Error(`Audi status: ${r.status} ${await r.text()}`);
+      const d = await r.json();
+      const ch = d.charging; const cl = d.climatisation; const fu = d.fuelStatus;
+      return send(res, 200, {
+        batteryPct:    ch?.batteryStatus?.value?.currentSOC_pct ?? null,
+        rangeKm:       fu?.rangeStatus?.value?.primaryEngine?.remainingRange_km ?? fu?.rangeStatus?.value?.electricRange ?? ch?.batteryStatus?.value?.cruisingRangeElectric_km ?? null,
+        chargingState: ch?.chargingStatus?.value?.chargingState ?? null,
+        chargeKw:      ch?.chargingStatus?.value?.chargePower_kW ?? null,
+        plugConnected: ch?.plugStatus?.value?.plugConnectionState === "connected",
+        targetSoc:     ch?.chargingSettings?.value?.targetSOC_pct ?? null,
+        climateOn:      ["cooling","heating","ventilation"].includes(cl?.climatisationStatus?.value?.climatisationState),
+        climateState:   cl?.climatisationStatus?.value?.climatisationState ?? null,
+        climateTemp:    cl?.climatisationSettings?.value?.targetTemperature_C ?? null,
+        climateMinutes: cl?.climatisationStatus?.value?.remainingClimatisationTime_min ?? null,
+      });
+    }
+
+    if (p === "/audi/climate/start" && req.method === "POST") {
+      const s = await ensureAudi();
+      const { temperature } = await readBody(req);
+      const r = await fetch(`${AUDI_VEHICLE_BASE}/vehicles/${AUDI_VIN}/climatisation/start`, {
+        method: "POST",
+        headers: { ...AUDI_HEADERS, Authorization: `Bearer ${s.token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ climatisationMode: "comfort", targetTemperature: Math.round(temperature || 21), targetTemperatureUnit: "celsius", climatisationWithoutExternalPower: true, climatizationAtUnlock: false, windowHeatingEnabled: true, zoneFrontLeftEnabled: true, zoneFrontRightEnabled: true, zoneRearLeftEnabled: false, zoneRearRightEnabled: false }),
+      });
+      if (!r.ok) throw new Error(`Audi klima start: ${r.status} ${await r.text()}`);
+      return send(res, 200, { ok: true });
+    }
+
+    if (p === "/audi/climate/stop" && req.method === "POST") {
+      const s = await ensureAudi();
+      const r = await fetch(`${AUDI_VEHICLE_BASE}/vehicles/${AUDI_VIN}/climatisation/stop`, {
+        method: "POST",
+        headers: { ...AUDI_HEADERS, Authorization: `Bearer ${s.token}` },
+      });
+      if (!r.ok) throw new Error(`Audi klima stopp: ${r.status} ${await r.text()}`);
       return send(res, 200, { ok: true });
     }
 
